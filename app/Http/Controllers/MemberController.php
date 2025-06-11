@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Member;
+use App\Models\Membership;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class MemberController extends Controller
 {
@@ -17,20 +19,30 @@ class MemberController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('member_id', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('member_id', 'like', "%{$search}%");
             });
         }
 
-        $members = $query->get();
+        $sortField = $request->get('sort', 'last_name');
+        $sortDirection = $request->get('direction', 'asc');
+        $allowedFields = ['first_name', 'last_name', 'email', 'member_id', 'entry_date'];
+        if (!in_array($sortField, $allowedFields)) {
+            $sortField = 'last_name';
+        }
 
-        return view('members.index', compact('members'));
+        $members = $query->orderBy($sortField, $sortDirection)
+                         ->paginate(25)
+                         ->appends($request->query());
+
+        return view('members.index', compact('members', 'sortField', 'sortDirection'));
     }
 
     public function create()
     {
-        return view('members.create');
+        $memberships = Membership::where('tenant_id', app('currentTenant')->id)->get();
+        return view('members.create', compact('memberships'));
     }
 
     public function store(Request $request)
@@ -41,7 +53,7 @@ class MemberController extends Controller
             'title'             => 'nullable|string|max:255',
             'first_name'        => 'required|string|max:255',
             'last_name'         => 'required|string|max:255',
-            'company'           => 'nullable|string|max:255',
+            'organization'      => 'nullable|string|max:255',
             'birthday'          => 'nullable|date',
             'member_id'         => 'nullable|string|max:255',
             'entry_date'        => 'nullable|date',
@@ -56,6 +68,7 @@ class MemberController extends Controller
             'city'              => 'nullable|string|max:255',
             'country'           => 'nullable|string|max:255',
             'care_of'           => 'nullable|string|max:255',
+            'membership_id'     => 'nullable|exists:memberships,id',
         ]);
 
         $validated['tenant_id'] = app('currentTenant')->id;
@@ -68,15 +81,14 @@ class MemberController extends Controller
     public function show(Member $member)
     {
         $this->authorizeMember($member);
-
         return view('members.show', compact('member'));
     }
 
     public function edit(Member $member)
     {
         $this->authorizeMember($member);
-
-        return view('members.edit', compact('member'));
+        $memberships = Membership::where('tenant_id', app('currentTenant')->id)->get();
+        return view('members.edit', compact('member', 'memberships'));
     }
 
     public function update(Request $request, Member $member)
@@ -89,7 +101,7 @@ class MemberController extends Controller
             'title'             => 'nullable|string|max:255',
             'first_name'        => 'required|string|max:255',
             'last_name'         => 'required|string|max:255',
-            'company'           => 'nullable|string|max:255',
+            'organization'      => 'nullable|string|max:255',
             'birthday'          => 'nullable|date',
             'member_id'         => 'nullable|string|max:255',
             'entry_date'        => 'nullable|date',
@@ -104,6 +116,7 @@ class MemberController extends Controller
             'city'              => 'nullable|string|max:255',
             'country'           => 'nullable|string|max:255',
             'care_of'           => 'nullable|string|max:255',
+            'membership_id'     => 'nullable|exists:memberships,id',
         ]);
 
         $member->update($validated);
@@ -114,12 +127,27 @@ class MemberController extends Controller
     public function destroy(Member $member)
     {
         $this->authorizeMember($member);
-
         $member->delete();
-
         return redirect()->route('members.index')->with('success', 'Mitglied gelöscht.');
     }
 
+    /**
+     * ➕ DSGVO-Datenauskunft als PDF nach Art. 15 DSGVO
+     */
+    public function exportDatenauskunft(Member $member)
+    {
+        $this->authorizeMember($member);
+
+        $pdf = Pdf::loadView('members.pdf.datenauskunft', [
+            'member' => $member
+        ]);
+
+        return $pdf->download("Datenauskunft_{$member->last_name}_{$member->id}.pdf");
+    }
+
+    /**
+     * ⚠️ Mandantenschutz: Zugriff nur auf eigene Vereinsmitglieder
+     */
     private function authorizeMember(Member $member)
     {
         if ($member->tenant_id !== app('currentTenant')->id) {

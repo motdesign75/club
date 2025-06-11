@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('members', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tenant_id');
-            
+
             // Block: Mitglied
             $table->enum('gender', ['weiblich', 'männlich', 'divers'])->nullable();
             $table->enum('salutation', ['Frau', 'Herr', 'Liebe', 'Lieber', 'Hallo'])->nullable();
@@ -25,6 +25,9 @@ return new class extends Migration {
             $table->date('entry_date')->nullable();
             $table->date('exit_date')->nullable();
             $table->date('cancellation_date')->nullable();
+
+            // NEU: Verknüpfung zur Mitgliedschaft
+            $table->foreignId('membership_id')->nullable()->constrained()->onDelete('set null');
 
             // Block: Kommunikation
             $table->string('email')->nullable();

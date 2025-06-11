@@ -11,12 +11,12 @@
             @method('PATCH')
 
             {{-- Block: Mitglied --}}
-            <h2 class="text-lg font-semibold text-gray-700">Mitglied</h2>
-
+            <h2 class="text-lg font-semibold text-gray-700">🧍 Mitglied</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="gender">Geschlecht</label>
                     <select name="gender" id="gender" class="w-full">
+                        <option value="">Bitte wählen</option>
                         <option value="weiblich" {{ $member->gender === 'weiblich' ? 'selected' : '' }}>weiblich</option>
                         <option value="männlich" {{ $member->gender === 'männlich' ? 'selected' : '' }}>männlich</option>
                         <option value="divers" {{ $member->gender === 'divers' ? 'selected' : '' }}>divers</option>
@@ -48,8 +48,8 @@
                 </div>
 
                 <div>
-                    <label for="company">Firma / Organisation</label>
-                    <input type="text" name="company" id="company" class="w-full" value="{{ old('company', $member->company) }}">
+                    <label for="organization">Firma / Organisation</label>
+                    <input type="text" name="organization" id="organization" class="w-full" value="{{ old('organization', $member->organization) }}">
                 </div>
 
                 <div>
@@ -59,21 +59,36 @@
             </div>
 
             {{-- Block: Mitgliedschaft --}}
-            <h2 class="text-lg font-semibold text-gray-700">Mitgliedschaft</h2>
-
+            <h2 class="text-lg font-semibold text-gray-700">📝 Mitgliedschaft</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="membership_id">Mitgliedschaft</label>
+                    <select name="membership_id" id="membership_id" class="w-full">
+                        <option value="">– bitte wählen –</option>
+                        @foreach($memberships as $membership)
+                            <option value="{{ $membership->id }}"
+                                {{ $member->membership_id == $membership->id ? 'selected' : '' }}>
+                                {{ $membership->name }} – {{ number_format($membership->fee, 2, ',', '.') }} € / {{ $membership->billing_cycle }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div>
                     <label for="member_id">Mitgliedsnummer</label>
                     <input type="text" name="member_id" id="member_id" class="w-full" value="{{ old('member_id', $member->member_id) }}">
                 </div>
+
                 <div>
                     <label for="entry_date">Eintritt</label>
                     <input type="date" name="entry_date" id="entry_date" class="w-full" value="{{ old('entry_date', $member->entry_date) }}">
                 </div>
+
                 <div>
                     <label for="exit_date">Austritt</label>
                     <input type="date" name="exit_date" id="exit_date" class="w-full" value="{{ old('exit_date', $member->exit_date) }}">
                 </div>
+
                 <div>
                     <label for="termination_date">Kündigungsdatum</label>
                     <input type="date" name="termination_date" id="termination_date" class="w-full" value="{{ old('termination_date', $member->termination_date) }}">
@@ -81,8 +96,7 @@
             </div>
 
             {{-- Block: Kommunikation --}}
-            <h2 class="text-lg font-semibold text-gray-700">Kommunikation</h2>
-
+            <h2 class="text-lg font-semibold text-gray-700">📞 Kommunikation</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="email">E-Mail</label>
@@ -99,8 +113,7 @@
             </div>
 
             {{-- Block: Adresse --}}
-            <h2 class="text-lg font-semibold text-gray-700">Adresse</h2>
-
+            <h2 class="text-lg font-semibold text-gray-700">📍 Adresse</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="street">Straße + Nr.</label>

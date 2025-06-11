@@ -12,7 +12,6 @@
         {{-- Mitglied --}}
         <div class="bg-white p-6 rounded shadow space-y-4">
             <h2 class="text-xl font-semibold text-gray-700">🧍 Mitglied</h2>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="gender" class="block text-sm font-medium">Geschlecht</label>
@@ -66,20 +65,34 @@
         {{-- Mitgliedschaft --}}
         <div class="bg-white p-6 rounded shadow space-y-4">
             <h2 class="text-xl font-semibold text-gray-700">📝 Mitgliedschaft</h2>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="membership_id" class="block text-sm font-medium">Mitgliedschaft</label>
+                    <select name="membership_id" id="membership_id" class="w-full border-gray-300 rounded">
+                        <option value="">– bitte wählen –</option>
+                        @foreach($memberships as $membership)
+                            <option value="{{ $membership->id }}" {{ old('membership_id') == $membership->id ? 'selected' : '' }}>
+                                {{ $membership->name }} – {{ number_format($membership->fee, 2, ',', '.') }} € / {{ $membership->billing_cycle }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div>
                     <label for="member_id" class="block text-sm font-medium">Mitgliedsnummer</label>
                     <input type="text" name="member_id" id="member_id" class="w-full border-gray-300 rounded">
                 </div>
+
                 <div>
                     <label for="entry_date" class="block text-sm font-medium">Eintritt</label>
                     <input type="date" name="entry_date" id="entry_date" class="w-full border-gray-300 rounded">
                 </div>
+
                 <div>
                     <label for="exit_date" class="block text-sm font-medium">Austritt</label>
                     <input type="date" name="exit_date" id="exit_date" class="w-full border-gray-300 rounded">
                 </div>
+
                 <div>
                     <label for="termination_date" class="block text-sm font-medium">Kündigungsdatum</label>
                     <input type="date" name="termination_date" id="termination_date" class="w-full border-gray-300 rounded">
@@ -90,7 +103,6 @@
         {{-- Kommunikation --}}
         <div class="bg-white p-6 rounded shadow space-y-4">
             <h2 class="text-xl font-semibold text-gray-700">📞 Kommunikation</h2>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="email" class="block text-sm font-medium">E-Mail</label>
@@ -110,7 +122,6 @@
         {{-- Adresse --}}
         <div class="bg-white p-6 rounded shadow space-y-4">
             <h2 class="text-xl font-semibold text-gray-700">📍 Adresse</h2>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="street" class="block text-sm font-medium">Straße + Nr.</label>
@@ -142,8 +153,8 @@
                 </div>
 
                 <div>
-                    <label for="co" class="block text-sm font-medium">C/O</label>
-                    <input type="text" name="co" id="co" class="w-full border-gray-300 rounded">
+                    <label for="care_of" class="block text-sm font-medium">C/O</label>
+                    <input type="text" name="care_of" id="care_of" class="w-full border-gray-300 rounded">
                 </div>
             </div>
         </div>

@@ -3,6 +3,8 @@
 return [
 
     'name' => env('APP_NAME', 'Laravel'),
+    
+    'version' => '0.9.0',
 
     'env' => env('APP_ENV', 'production'),
 
@@ -82,6 +84,8 @@ return [
         */
 
         // (Hier ggf. deine Paket-Provider)
+        
+    
 
         /*
         |--------------------------------------------------------------------------

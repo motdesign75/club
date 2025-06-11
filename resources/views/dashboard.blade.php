@@ -36,12 +36,29 @@
             </div>
 
             <!-- Platzhalter für zukünftiges Feature -->
-            <div class="bg-white p-5 rounded-lg shadow border-l-4 border-blue-400">
-                <div class="text-sm text-gray-600">📅 Nächste Veranstaltung</div>
-                <div class="text-xl font-semibold text-gray-800 mt-2">
-                    Bald verfügbar
-                </div>
-            </div>
-        </div>
-    </div>
+            <!-- Nächste Veranstaltungen -->
+<div class="bg-white p-5 rounded-lg shadow border-l-4 border-blue-400">
+    <div class="text-sm text-gray-600 mb-2">📅 Nächste Veranstaltungen</div>
+
+    @if(isset($events) && $events->count())
+        <ul class="space-y-2">
+            @foreach($events as $event)
+                <li class="border-t pt-2">
+                    <div class="text-base font-semibold text-gray-800">{{ $event->title }}</div>
+                    <div class="text-sm text-gray-600">
+                        {{ $event->start->format('d.m.Y H:i') }} – {{ $event->end->format('d.m.Y H:i') }}<br>
+                        @if($event->is_public)
+                            <span class="text-green-600 text-xs font-medium">Öffentlich</span>
+                        @else
+                            <span class="text-yellow-600 text-xs font-medium">Intern</span>
+                        @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    @else
+        <div class="text-gray-500 text-sm">Aktuell keine geplanten Events.</div>
+    @endif
+</div>
+
 @endsection

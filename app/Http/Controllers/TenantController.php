@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -14,7 +13,8 @@ class TenantController extends Controller
     {
         $tenant = Auth::user()->tenant;
 
-        return view('tenant.dashboard', compact('tenant'));
+        // Achte darauf, dass die View tenant/show.blade.php heißt und layouts.sidebar erweitert
+        return view('tenant.show', compact('tenant'));
     }
 
     public function edit(): View
