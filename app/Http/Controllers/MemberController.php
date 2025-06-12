@@ -6,6 +6,7 @@ use App\Models\Member;
 use App\Models\Membership;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class MemberController extends Controller
 {
@@ -69,9 +70,14 @@ class MemberController extends Controller
             'country'           => 'nullable|string|max:255',
             'care_of'           => 'nullable|string|max:255',
             'membership_id'     => 'nullable|exists:memberships,id',
+            'photo'             => 'nullable|image|max:2048',
         ]);
 
         $validated['tenant_id'] = app('currentTenant')->id;
+
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('photos', 'public');
+        }
 
         Member::create($validated);
 
@@ -117,7 +123,16 @@ class MemberController extends Controller
             'country'           => 'nullable|string|max:255',
             'care_of'           => 'nullable|string|max:255',
             'membership_id'     => 'nullable|exists:memberships,id',
+            'photo'             => 'nullable|image|max:2048',
         ]);
+
+        if ($request->hasFile('photo')) {
+            if ($member->photo && Storage::disk('public')->exists($member->photo)) {
+                Storage::disk('public')->delete($member->photo);
+            }
+
+            $validated['photo'] = $request->file('photo')->store('photos', 'public');
+        }
 
         $member->update($validated);
 
@@ -127,6 +142,11 @@ class MemberController extends Controller
     public function destroy(Member $member)
     {
         $this->authorizeMember($member);
+
+        if ($member->photo && Storage::disk('public')->exists($member->photo)) {
+            Storage::disk('public')->delete($member->photo);
+        }
+
         $member->delete();
         return redirect()->route('members.index')->with('success', 'Mitglied gelöscht.');
     }

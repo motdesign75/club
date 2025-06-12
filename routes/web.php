@@ -7,6 +7,7 @@ use App\Http\Controllers\TenantController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\MembershipController;
+use App\Http\Controllers\RoleController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -34,8 +35,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('members', MemberController::class);
 
     // DSGVO-Datenauskunft als PDF
-    Route::get('/members/{member}/datenauskunft', [MemberController::class, 'exportDatenauskunft'])
-        ->name('members.datenauskunft');
+    Route::get('/members/{member}/datenauskunft', [MemberController::class, 'exportDatenauskunft'])->name('members.datenauskunft');
+    Route::get('/members/{member}/pdf', [MemberController::class, 'exportDatenauskunft'])->name('members.pdf');
 
     // Vereinsprofil anzeigen und bearbeiten
     Route::get('/verein', [TenantController::class, 'show'])->name('tenant.show');
@@ -45,15 +46,15 @@ Route::middleware('auth')->group(function () {
     // Event-Formular explizit definieren, damit kein Konflikt mit {event}
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
 
-    // Resource-Routen für Events – ohne show & create (weil create oben schon definiert)
+    // Resource-Routen für Events – ohne show & create
     Route::resource('events', EventController::class)->except(['show', 'create']);
 
     // Mitgliedschaften
     Route::resource('memberships', MembershipController::class)->except(['show']);
-    
-    // DSGVO PDF-Auskunfts-Download
-    Route::get('/members/{member}/pdf', [\App\Http\Controllers\MemberController::class, 'exportDatenauskunft'])->name('members.pdf');
 
+    // Rollenverwaltung
+    Route::get('/einstellungen/rollen', [RoleController::class, 'edit'])->name('roles.edit');
+    Route::post('/einstellungen/rollen', [RoleController::class, 'update'])->name('roles.update');
 });
 
 require __DIR__.'/auth.php';

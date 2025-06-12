@@ -6,7 +6,7 @@
 <div class="max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">➕ Neues Mitglied</h1>
 
-    <form action="{{ route('members.store') }}" method="POST" class="space-y-8">
+    <form action="{{ route('members.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
         @csrf
 
         {{-- Mitglied --}}
@@ -58,6 +58,11 @@
                 <div>
                     <label for="birthday" class="block text-sm font-medium">Geburtstag</label>
                     <input type="date" name="birthday" id="birthday" class="w-full border-gray-300 rounded">
+                </div>
+
+                <div>
+                    <label for="photo" class="block text-sm font-medium">Profilfoto</label>
+                    <input type="file" name="photo" id="photo" accept="image/*" class="w-full border-gray-300 rounded file:border file:bg-gray-100 file:rounded file:px-3 file:py-1">
                 </div>
             </div>
         </div>
