@@ -83,7 +83,7 @@ class TransactionController extends Controller
         return redirect()->route('transactions.index')->with('success', 'Buchung gelöscht.');
     }
 
-    // Prüft, ob der Benutzer Zugriff auf die Buchung hat
+    // Zugriffsschutz
     protected function authorizeTransaction(Transaction $transaction)
     {
         if ($transaction->tenant_id !== auth()->user()->tenant_id) {
@@ -91,9 +91,7 @@ class TransactionController extends Controller
         }
     }
 
-    /**
-     * Einnahmen- & Ausgabenübersicht
-     */
+    // Einnahmen & Ausgaben Übersicht
     public function summary(Request $request)
     {
         $tenantId = auth()->user()->tenant_id;
@@ -104,26 +102,24 @@ class TransactionController extends Controller
         $transactions = Transaction::where('tenant_id', $tenantId)
             ->whereBetween('date', [$start, $end])
             ->with(['account_from', 'account_to'])
+            ->orderBy('date')
             ->get();
 
-        // Einnahmen: Kontoart 'einnahme' beim Quellkonto
         $income = $transactions
-            ->filter(fn ($t) => $t->account_from && $t->account_from->type === 'einnahme')
+            ->filter(fn($t) => $t->account_to && $t->account_to->type === 'einnahme')
             ->sum('amount');
 
-        // Ausgaben: Kontoart 'ausgabe' beim Zielkonto
         $expense = $transactions
-            ->filter(fn ($t) => $t->account_to && $t->account_to->type === 'ausgabe')
+            ->filter(fn($t) => $t->account_from && $t->account_from->type === 'ausgabe')
             ->sum('amount');
 
-        $balance = $income - $expense;
+        $saldo = $income - $expense;
 
-        // Monatliche Gruppierung
         $byMonth = $transactions->groupBy(function ($t) {
             return Carbon::parse($t->date)->format('Y-m');
-        })->map(function ($group) {
-            $income = $group->filter(fn ($t) => $t->account_from && $t->account_from->type === 'einnahme')->sum('amount');
-            $expense = $group->filter(fn ($t) => $t->account_to && $t->account_to->type === 'ausgabe')->sum('amount');
+        })->map(function ($items) {
+            $income = $items->filter(fn($t) => $t->account_to && $t->account_to->type === 'einnahme')->sum('amount');
+            $expense = $items->filter(fn($t) => $t->account_from && $t->account_from->type === 'ausgabe')->sum('amount');
             return [
                 'income' => $income,
                 'expense' => $expense,
@@ -131,13 +127,16 @@ class TransactionController extends Controller
             ];
         });
 
-        $summary = [
-            'total_income' => $income,
-            'total_expense' => $expense,
-            'saldo' => $balance,
-            'by_month' => $byMonth,
-        ];
-
-        return view('transactions.summary', compact('summary', 'start', 'end'));
+        return view('transactions.summary', [
+            'summary' => [
+                'total_income' => $income,
+                'total_expense' => $expense,
+                'saldo' => $saldo,
+                'by_month' => $byMonth,
+                'transactions' => $transactions, // Wichtig für Tabelle mit Einzelbuchungen
+            ],
+            'start' => $start,
+            'end' => $end,
+        ]);
     }
 }
