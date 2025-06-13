@@ -41,6 +41,33 @@
 
                 <hr class="my-4 border-blue-100" aria-hidden="true">
 
+                <h2 class="text-xs font-semibold uppercase text-blue-500 pl-3">💰 Finanzen</h2>
+                <ul class="space-y-2 mt-1">
+                    <li>
+                        <a href="{{ route('accounts.index') }}"
+                           class="block px-3 py-2 rounded hover:bg-blue-100 transition focus:outline focus:ring-2 focus:ring-blue-400"
+                           @if (request()->routeIs('accounts.index')) aria-current="page" @endif>
+                            📒 Kontenplan
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('transactions.index') }}"
+                           class="block px-3 py-2 rounded hover:bg-blue-100 transition focus:outline focus:ring-2 focus:ring-blue-400"
+                           @if (request()->routeIs('transactions.*')) aria-current="page" @endif>
+                            📑 Buchungen
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('transactions.summary') }}"
+                           class="block px-3 py-2 rounded hover:bg-blue-100 transition focus:outline focus:ring-2 focus:ring-blue-400"
+                           @if (request()->routeIs('transactions.summary')) aria-current="page" @endif>
+                            📈 Einnahmen & Ausgaben
+                        </a>
+                    </li>
+                </ul>
+
+                <hr class="my-4 border-blue-100" aria-hidden="true">
+
                 <h2 class="text-xs font-semibold uppercase text-blue-500 pl-3">⚙️ Einstellungen</h2>
                 <ul class="space-y-2 mt-1">
                     <li>
@@ -89,6 +116,7 @@
         <main class="flex-1 p-6">
             @yield('content')
         </main>
+
     </div>
 </body>
 </html>

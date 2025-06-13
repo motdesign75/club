@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 class RegisteredUserController extends Controller
 {
     /**
-     * Show registration form
+     * Zeigt das Registrierungsformular an.
      */
     public function create(): View
     {
@@ -26,35 +26,53 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle user registration
+     * Speichert einen neuen Benutzer und erstellt gleichzeitig den Verein (Tenant).
      */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'verein' => ['required', 'string', 'max:255'],
+            'verein'   => ['required', 'string', 'max:255'],
         ]);
 
-        // Schritt 1: Verein anlegen
+        $slug = Str::slug($request->input('verein'));
+
+        // Slug doppelt?
+        if (Tenant::where('slug', $slug)->exists()) {
+            return back()
+                ->withErrors(['verein' => 'Ein Verein mit diesem Namen wurde bereits registriert.'])
+                ->withInput();
+        }
+
+        // E-Mail doppelt?
+        if (Tenant::where('email', $request->input('email'))->exists()) {
+            return back()
+                ->withErrors(['email' => 'Diese E-Mail-Adresse ist bereits einem anderen Verein zugeordnet.'])
+                ->withInput();
+        }
+
+        // Schritt 1: Verein (Mandant) anlegen
         $tenant = Tenant::create([
-            'name' => $request->input('verein'),
-            'slug' => Str::slug($request->input('verein')),
+            'name'  => $request->input('verein'),
+            'slug'  => $slug,
             'email' => $request->input('email'),
         ]);
 
-        // Schritt 2: Benutzer mit tenant_id anlegen
+        
+
+        // Schritt 2: Benutzer dem Verein zuordnen
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name'      => $request->input('name'),
+            'email'     => $request->input('email'),
+            'password'  => Hash::make($request->input('password')),
             'tenant_id' => $tenant->id,
         ]);
 
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->intended(RouteServiceProvider::HOME);
     }
 }

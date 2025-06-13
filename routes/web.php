@@ -8,6 +8,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\TransactionController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -55,6 +57,21 @@ Route::middleware('auth')->group(function () {
     // Rollenverwaltung
     Route::get('/einstellungen/rollen', [RoleController::class, 'edit'])->name('roles.edit');
     Route::post('/einstellungen/rollen', [RoleController::class, 'update'])->name('roles.update');
+
+    // Finanzen – Kontenverwaltung
+    Route::resource('accounts', AccountController::class)->except(['show']);
+
+    // Finanzen – Buchungen
+    Route::resource('transactions', TransactionController::class)->except(['show']);
+
+    // Einnahmen & Ausgaben Übersicht
+    Route::get('/transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
+
+    // envcheck
+    Route::get('/envcheck', function () {
+        dd(config('app.env'), config('app.debug'));
+    });
+
 });
 
 require __DIR__.'/auth.php';

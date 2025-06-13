@@ -2,21 +2,19 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Tenant;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Die Felder, die massenweise zuweisbar sind.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
@@ -26,17 +24,28 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Diese Felder werden bei Serialisierung verborgen.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
         'remember_token',
+        // 'two_factor_recovery_codes',
+        // 'two_factor_secret',
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Accessors, die automatisch angehängt werden sollen.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        // 'profile_photo_url',
+    ];
+
+    /**
+     * Typ-Casts für bestimmte Felder.
      *
      * @return array<string, string>
      */
@@ -49,10 +58,10 @@ class User extends Authenticatable
     }
 
     /**
-     * Beziehung: Benutzer gehört zu einem Tenant (Verein)
+     * Beziehung zum aktuellen Verein (Mandant).
      */
     public function tenant()
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsTo(\App\Models\Tenant::class);
     }
 }
