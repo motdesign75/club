@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+// use Illuminate\Database\Eloquent\SoftDeletes; // Optional, wenn du gelöschte Mitglieder wiederherstellen willst
 
 class Member extends Model
 {
     use HasFactory;
+    // use SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -20,7 +22,7 @@ class Member extends Model
         'last_name',
         'organization',
         'birthday',
-        'photo', // NEU: Profilfoto
+        'photo',
 
         // Block: Mitgliedschaft
         'member_id',
@@ -36,11 +38,23 @@ class Member extends Model
 
         // Block: Adresse
         'street',
-        'address_addition', // korrigiert
+        'address_addition',
         'zip',
         'city',
         'country',
         'care_of',
+    ];
+
+    protected $casts = [
+        'birthday'         => 'date',
+        'entry_date'       => 'date',
+        'exit_date'        => 'date',
+        'termination_date' => 'date',
+    ];
+
+    protected $appends = [
+        'full_name',
+        'country_name',
     ];
 
     /**
@@ -65,6 +79,15 @@ class Member extends Model
     public function scopeForCurrentTenant($query)
     {
         return $query->where('tenant_id', auth()->user()->tenant_id);
+    }
+
+    /**
+     * Accessor: Vollständiger Name (ggf. mit Titel)
+     */
+    public function getFullNameAttribute()
+    {
+        $parts = array_filter([$this->title, $this->first_name, $this->last_name]);
+        return implode(' ', $parts);
     }
 
     /**

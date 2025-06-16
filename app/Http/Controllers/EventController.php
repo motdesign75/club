@@ -5,27 +5,37 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
+use App\Models\Member;
 
 class EventController extends Controller
 {
     public function dashboardEvents()
     {
-        $tenantId = Auth::user()->tenant_id;
+        $tenant = app('currentTenant');
+        $tenantId = $tenant->id;
 
+        // Kommende Events (max. 5)
         $events = Event::where('tenant_id', $tenantId)
             ->whereDate('start', '>=', now())
             ->orderBy('start')
             ->take(5)
             ->get();
 
-        $tenant = app('currentTenant');
+        // Anzahl Mitglieder dieses Vereins
+        $membersCount = Member::where('tenant_id', $tenantId)->count();
 
-        return view('dashboard', compact('events', 'tenant'));
+        // Lizenztyp (Fallback auf "Trial")
+        $licenseType = $tenant->license_type ?? 'Trial';
+
+        return view('dashboard', compact('events', 'tenant', 'membersCount', 'licenseType'));
     }
 
     public function index()
     {
-        $events = Event::where('tenant_id', Auth::user()->tenant_id)->orderBy('start', 'desc')->get();
+        $events = Event::where('tenant_id', Auth::user()->tenant_id)
+            ->orderBy('start', 'desc')
+            ->get();
+
         return view('events.index', compact('events'));
     }
 
@@ -37,22 +47,22 @@ class EventController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
-            'location' => 'nullable|string|max:255',
-            'start' => 'required|date',
-            'end' => 'required|date|after_or_equal:start',
-            'is_public' => 'required|boolean',
+            'location'    => 'nullable|string|max:255',
+            'start'       => 'required|date',
+            'end'         => 'required|date|after_or_equal:start',
+            'is_public'   => 'required|boolean',
         ]);
 
         Event::create([
-            'tenant_id' => Auth::user()->tenant_id,
-            'title' => $request->title,
+            'tenant_id'   => Auth::user()->tenant_id,
+            'title'       => $request->title,
             'description' => $request->description,
-            'location' => $request->location,
-            'start' => $request->start,
-            'end' => $request->end,
-            'is_public' => $request->is_public,
+            'location'    => $request->location,
+            'start'       => $request->start,
+            'end'         => $request->end,
+            'is_public'   => $request->is_public,
         ]);
 
         return redirect()->route('events.index')->with('success', 'Event wurde gespeichert.');
@@ -69,12 +79,12 @@ class EventController extends Controller
         $this->authorizeEvent($event);
 
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
-            'location' => 'nullable|string|max:255',
-            'start' => 'required|date',
-            'end' => 'required|date|after_or_equal:start',
-            'is_public' => 'required|boolean',
+            'location'    => 'nullable|string|max:255',
+            'start'       => 'required|date',
+            'end'         => 'required|date|after_or_equal:start',
+            'is_public'   => 'required|boolean',
         ]);
 
         $event->update($request->all());
@@ -86,6 +96,7 @@ class EventController extends Controller
     {
         $this->authorizeEvent($event);
         $event->delete();
+
         return redirect()->route('events.index')->with('success', 'Event gelöscht.');
     }
 

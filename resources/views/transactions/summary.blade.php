@@ -9,29 +9,41 @@
     {{-- Übersichtskarten --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="bg-gradient-to-br from-green-100 to-green-200 text-green-900 rounded-xl shadow-lg p-6">
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center justify-between">
                 <div class="text-3xl">💰</div>
-                <div>
+                <div class="text-right">
                     <p class="text-sm font-medium">Gesamte Einnahmen</p>
                     <p class="text-2xl font-bold">{{ number_format($summary['total_income'], 2, ',', '.') }} €</p>
                 </div>
             </div>
         </div>
         <div class="bg-gradient-to-br from-red-100 to-red-200 text-red-900 rounded-xl shadow-lg p-6">
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center justify-between">
                 <div class="text-3xl">💸</div>
-                <div>
+                <div class="text-right">
                     <p class="text-sm font-medium">Gesamte Ausgaben</p>
                     <p class="text-2xl font-bold">{{ number_format($summary['total_expense'], 2, ',', '.') }} €</p>
                 </div>
             </div>
         </div>
         <div class="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 rounded-xl shadow-lg p-6">
-            <div class="flex items-center space-x-3">
-                <div class="text-3xl">📈</div>
-                <div>
-                    <p class="text-sm font-medium">Saldo</p>
-                    <p class="text-2xl font-bold">{{ number_format($summary['saldo'], 2, ',', '.') }} €</p>
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium">Saldo gesamt</span>
+                    <span class="text-2xl font-bold">{{ number_format($summary['saldo'], 2, ',', '.') }} €</span>
+                </div>
+                <div class="text-sm text-gray-800">
+                    📅 Aktueller Monat: <strong>{{ number_format($summary['current']['saldo'], 2, ',', '.') }} €</strong><br>
+                    📆 Vormonat: <strong>{{ number_format($summary['previous']['saldo'], 2, ',', '.') }} €</strong><br>
+                    🔁 Veränderung:
+                    @php
+                        $diff = $summary['current']['saldo'] - $summary['previous']['saldo'];
+                        $symbol = $diff > 0 ? '⬆️' : ($diff < 0 ? '⬇️' : '➡️');
+                        $color = $diff > 0 ? 'text-green-700' : ($diff < 0 ? 'text-red-700' : 'text-gray-700');
+                    @endphp
+                    <span class="{{ $color }}">
+                        {{ $symbol }} {{ number_format($diff, 2, ',', '.') }} €
+                    </span>
                 </div>
             </div>
         </div>

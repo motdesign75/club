@@ -3,91 +3,78 @@
 @section('title', 'Mitglied: ' . $member->first_name . ' ' . $member->last_name)
 
 @section('content')
-<div class="max-w-5xl mx-auto space-y-8 text-gray-800">
-    <h1 class="text-2xl font-bold">
-        👤 Mitgliederdetails: {{ $member->salutation }} {{ $member->first_name }} {{ $member->last_name }}
-    </h1>
+<div class="max-w-6xl mx-auto space-y-10 text-gray-800">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold text-[#2954A3]">
+            👤 Mitglied: {{ $member->salutation }} {{ $member->first_name }} {{ $member->last_name }}
+        </h1>
+        <a href="{{ route('members.edit', $member) }}" class="bg-[#2954A3] text-white px-5 py-2 rounded-2xl shadow hover:bg-[#1E3F7F] transition-all">
+            ✏️ Bearbeiten
+        </a>
+    </div>
 
     {{-- Block: Mitglied --}}
-<section aria-labelledby="block-mitglied" class="bg-white shadow-md rounded-lg p-6 border-l-4 border-blue-500">
-    <h2 id="block-mitglied" class="text-lg font-semibold text-blue-600 mb-4">🧍 Mitglied</h2>
-
-    <div class="flex flex-col md:flex-row md:items-start gap-6">
-        @if($member->photo)
-            <div class="w-32 h-32 shrink-0">
-                <img src="{{ asset('storage/' . $member->photo) }}"
-                     alt="Profilfoto von {{ $member->first_name }} {{ $member->last_name }}"
-                     class="w-32 h-32 object-cover rounded-full border shadow">
+    <section class="bg-white rounded-2xl shadow-soft p-6 ring-4 ring-[#DBEAFE]">
+        <h2 class="text-xl font-semibold text-[#2954A3] mb-4">🧍 Mitglied</h2>
+        <div class="flex flex-col md:flex-row gap-6">
+            @if($member->photo)
+                <div class="w-32 h-32 shrink-0">
+                    <img src="{{ asset('storage/' . $member->photo) }}" alt="Profilfoto"
+                         class="w-32 h-32 object-cover rounded-full border shadow">
+                </div>
+            @endif
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                <x-member.detail label="Geschlecht" :value="$member->gender" />
+                <x-member.detail label="Anrede" :value="$member->salutation" />
+                <x-member.detail label="Titel" :value="$member->title" />
+                <x-member.detail label="Vorname" :value="$member->first_name" />
+                <x-member.detail label="Nachname" :value="$member->last_name" />
+                <x-member.detail label="Organisation" :value="$member->organization" />
+                <x-member.detail label="Geburtstag" :value="$member->birthday" />
             </div>
-        @endif
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-            <div><strong>Geschlecht:</strong> {{ $member->gender }}</div>
-            <div><strong>Anrede:</strong> {{ $member->salutation }}</div>
-            <div><strong>Titel:</strong> {{ $member->title }}</div>
-            <div><strong>Vorname:</strong> {{ $member->first_name }}</div>
-            <div><strong>Nachname:</strong> {{ $member->last_name }}</div>
-            <div><strong>Firma / Organisation:</strong> {{ $member->organization }}</div>
-            <div><strong>Geburtstag:</strong> {{ $member->birthday }}</div>
         </div>
-    </div>
-</section>
+    </section>
 
     {{-- Block: Mitgliedschaft --}}
-    <section aria-labelledby="block-mitgliedschaft" class="bg-white shadow-md rounded-lg p-6 border-l-4 border-green-500">
-        <h2 id="block-mitgliedschaft" class="text-lg font-semibold text-green-600 mb-4">📝 Mitgliedschaft</h2>
+    <section class="bg-white rounded-2xl shadow-soft p-6 ring-4 ring-[#D1FAE5]">
+        <h2 class="text-xl font-semibold text-green-600 mb-4">📝 Mitgliedschaft</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <strong>Mitgliedschaft:</strong>
-                @if($member->membership)
-                    {{ $member->membership->name }} – {{ number_format($member->membership->fee, 2, ',', '.') }} € / {{ $member->membership->billing_cycle }}
-                @else
-                    –
-                @endif
-            </div>
-            <div><strong>Mitgliedsnummer:</strong> {{ $member->member_id }}</div>
-            <div><strong>Eintritt:</strong> {{ $member->entry_date }}</div>
-            <div><strong>Austritt:</strong> {{ $member->exit_date }}</div>
-            <div><strong>Kündigungsdatum:</strong> {{ $member->termination_date }}</div>
+            <x-member.detail label="Mitgliedschaft" :value="$member->membership ? $member->membership->name . ' – ' . number_format($member->membership->fee, 2, ',', '.') . ' € / ' . $member->membership->billing_cycle : '–'" />
+            <x-member.detail label="Mitgliedsnummer" :value="$member->member_id" />
+            <x-member.detail label="Eintritt" :value="$member->entry_date" />
+            <x-member.detail label="Austritt" :value="$member->exit_date" />
+            <x-member.detail label="Kündigungsdatum" :value="$member->termination_date" />
         </div>
     </section>
 
     {{-- Block: Kommunikation --}}
-    <section aria-labelledby="block-kommunikation" class="bg-white shadow-md rounded-lg p-6 border-l-4 border-yellow-500">
-        <h2 id="block-kommunikation" class="text-lg font-semibold text-yellow-600 mb-4">📞 Kommunikation</h2>
+    <section class="bg-white rounded-2xl shadow-soft p-6 ring-4 ring-[#FEF3C7]">
+        <h2 class="text-xl font-semibold text-yellow-600 mb-4">📞 Kommunikation</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><strong>E-Mail:</strong> <a href="mailto:{{ $member->email }}" class="text-blue-600 underline">{{ $member->email }}</a></div>
-            <div><strong>Mobil:</strong> <a href="tel:{{ $member->mobile }}" class="text-blue-600 underline">{{ $member->mobile }}</a></div>
-            <div><strong>Festnetz:</strong> <a href="tel:{{ $member->landline }}" class="text-blue-600 underline">{{ $member->landline }}</a></div>
+            <x-member.detail label="E-Mail" :value="$member->email" :link="'mailto:' . $member->email" />
+            <x-member.detail label="Mobil" :value="$member->mobile" :link="'tel:' . $member->mobile" />
+            <x-member.detail label="Festnetz" :value="$member->landline" :link="'tel:' . $member->landline" />
         </div>
     </section>
 
     {{-- Block: Adresse --}}
-    <section aria-labelledby="block-adresse" class="bg-white shadow-md rounded-lg p-6 border-l-4 border-purple-500">
-        <h2 id="block-adresse" class="text-lg font-semibold text-purple-600 mb-4">📍 Adresse</h2>
+    <section class="bg-white rounded-2xl shadow-soft p-6 ring-4 ring-[#EDE9FE]">
+        <h2 class="text-xl font-semibold text-purple-600 mb-4">📍 Adresse</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><strong>Straße + Nr.:</strong> {{ $member->street }}</div>
-            <div><strong>Adresszusatz:</strong> {{ $member->address_addition }}</div>
-            <div><strong>PLZ:</strong> {{ $member->zip }}</div>
-            <div><strong>Ort:</strong> {{ $member->city }}</div>
-            <div><strong>Land:</strong>
-                @php
-                    $countryName = config('countries.list')[$member->country] ?? $member->country;
-                @endphp
-                {{ $countryName }}
-            </div>
-            <div><strong>C/O:</strong> {{ $member->care_of }}</div>
+            <x-member.detail label="Straße + Nr." :value="$member->street" />
+            <x-member.detail label="Adresszusatz" :value="$member->address_addition" />
+            <x-member.detail label="PLZ" :value="$member->zip" />
+            <x-member.detail label="Ort" :value="$member->city" />
+            <x-member.detail label="Land" :value="config('countries.list')[$member->country] ?? $member->country" />
+            <x-member.detail label="C/O" :value="$member->care_of" />
         </div>
     </section>
 
-    {{-- Navigation --}}
-    <nav class="flex justify-between pt-6 text-sm" aria-label="Aktionen">
-        <a href="{{ route('members.index') }}" class="text-gray-600 hover:text-gray-900">
-            ← Zur Übersicht
+    {{-- Zurück-Link --}}
+    <div class="pt-4">
+        <a href="{{ route('members.index') }}" class="text-sm text-gray-600 hover:text-[#2954A3] underline">
+            ← Zur Mitgliederübersicht
         </a>
-        <a href="{{ route('members.edit', $member) }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            ✏️ Bearbeiten
-        </a>
-    </nav>
+    </div>
 </div>
 @endsection
