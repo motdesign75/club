@@ -1,37 +1,54 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">📅 Veranstaltungen</h2>
-    </x-slot>
+@extends('layouts.sidebar')
 
-    <div class="py-6">
-        <a href="{{ route('events.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+@section('title', 'Veranstaltungen')
+
+@section('content')
+<div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    {{-- Button Neues Event --}}
+    <div class="mb-6">
+        <a href="{{ route('events.create') }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
             ➕ Neues Event
         </a>
+    </div>
 
-        @if(session('success'))
-            <div class="text-green-600 mt-4">{{ session('success') }}</div>
-        @endif
+    {{-- Erfolgsmeldung --}}
+    @if(session('success'))
+        <div class="mb-4 text-green-700 bg-green-100 p-4 rounded border border-green-200">
+            {{ session('success') }}
+        </div>
+    @endif
 
-        <div class="mt-6">
-            @foreach($events as $event)
-                <div class="border p-4 rounded mb-4 bg-white">
-                    <div class="flex justify-between">
-                        <div>
-                            <h3 class="text-xl font-bold">{{ $event->title }}</h3>
-                            <p>{{ $event->start->format('d.m.Y H:i') }} – {{ $event->end->format('d.m.Y H:i') }}</p>
-                            <p>{{ $event->location }}</p>
-                        </div>
-                        <div class="space-x-2">
-                            <a href="{{ route('events.edit', $event) }}" class="text-blue-600 hover:underline">Bearbeiten</a>
-                            <form action="{{ route('events.destroy', $event) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <button class="text-red-600 hover:underline" onclick="return confirm('Wirklich löschen?')">Löschen</button>
-                            </form>
-                        </div>
+    {{-- Eventliste --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        @forelse ($events as $event)
+            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $event->title }}</h3>
+                        <p class="text-sm text-gray-600 mb-1">
+                            📍 {{ $event->location ?? 'Ort folgt' }}
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            📆 {{ $event->start->format('d.m.Y H:i') }} – {{ $event->end->format('H:i') }}
+                        </p>
+                    </div>
+                    <div class="text-right space-y-1">
+                        <a href="{{ route('events.edit', $event) }}"
+                           class="text-sm text-blue-600 hover:underline">Bearbeiten</a>
+                        <form action="{{ route('events.destroy', $event) }}" method="POST" onsubmit="return confirm('Wirklich löschen?')" class="inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-sm text-red-600 hover:underline">Löschen</button>
+                        </form>
                     </div>
                 </div>
-            @endforeach
-        </div>
+            </div>
+        @empty
+            <div class="col-span-3 text-gray-500 text-center p-10 bg-gray-50 rounded-lg">
+                🎉 Keine Veranstaltungen gefunden.
+            </div>
+        @endforelse
     </div>
-</x-app-layout>
+</div>
+@endsection

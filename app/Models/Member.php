@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-// use Illuminate\Database\Eloquent\SoftDeletes; // Optional, wenn du gelöschte Mitglieder wiederherstellen willst
+// use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Member extends Model
 {
@@ -71,6 +71,14 @@ class Member extends Model
     public function membership()
     {
         return $this->belongsTo(Membership::class);
+    }
+
+    /**
+     * Beziehung: Benutzerdefinierte Felder (Werte)
+     */
+    public function customValues()
+    {
+        return $this->hasMany(CustomMemberValue::class);
     }
 
     /**

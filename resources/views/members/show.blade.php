@@ -70,6 +70,31 @@
         </div>
     </section>
 
+    {{-- Block: Benutzerdefinierte Felder --}}
+    @if($customFields->count())
+    <section class="bg-white rounded-2xl shadow-soft p-6 ring-4 ring-[#FCE7F3]">
+        <h2 class="text-xl font-semibold text-pink-600 mb-4">🧩 Benutzerdefinierte Felder</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @foreach($customFields as $field)
+                @php
+                    $value = optional($member->customValues->firstWhere('custom_member_field_id', $field->id))->value ?? '–';
+
+                    if ($field->type === 'date' && $value !== '–') {
+                        $value = \Carbon\Carbon::parse($value)->format('d.m.Y');
+                    }
+
+                    if ($field->type === 'select' && $value !== '–' && $field->options) {
+                        $options = explode('|', $field->options);
+                        $value = in_array($value, $options) ? $value : '–';
+                    }
+                @endphp
+
+                <x-member.detail :label="$field->label" :value="$value" />
+            @endforeach
+        </div>
+    </section>
+    @endif
+
     {{-- Zurück-Link --}}
     <div class="pt-4">
         <a href="{{ route('members.index') }}" class="text-sm text-gray-600 hover:text-[#2954A3] underline">

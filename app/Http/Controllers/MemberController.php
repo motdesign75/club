@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Member;
+use App\Models\CustomMemberField;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Requests\StoreMemberRequest;
@@ -74,7 +75,14 @@ class MemberController extends Controller
     public function show(Member $member)
     {
         $this->authorizeMember($member);
-        return view('members.show', compact('member'));
+        $member->load('customValues');
+
+        $customFields = CustomMemberField::where('tenant_id', $member->tenant_id)
+            ->where('visible', true)
+            ->orderBy('order')
+            ->get();
+
+        return view('members.show', compact('member', 'customFields'));
     }
 
     /**
@@ -84,7 +92,14 @@ class MemberController extends Controller
     {
         $this->authorizeMember($member);
         $memberships = $membershipService->getForTenant();
-        return view('members.edit', compact('member', 'memberships'));
+        $member->load('customValues');
+
+        $customFields = CustomMemberField::where('tenant_id', $member->tenant_id)
+            ->where('visible', true)
+            ->orderBy('order')
+            ->get();
+
+        return view('members.edit', compact('member', 'memberships', 'customFields'));
     }
 
     /**

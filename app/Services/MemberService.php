@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Member;
+use App\Models\CustomMemberValue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -22,7 +23,10 @@ class MemberService
             $data['photo'] = $request->file('photo')->store('photos', 'public');
         }
 
-        Member::create($data);
+        $member = Member::create($data);
+
+        // Benutzerdefinierte Felder speichern
+        $this->syncCustomFields($member, $request->input('custom_fields', []));
     }
 
     /**
@@ -44,5 +48,26 @@ class MemberService
         }
 
         $member->update($data);
+
+        // Benutzerdefinierte Felder aktualisieren
+        $this->syncCustomFields($member, $request->input('custom_fields', []));
+    }
+
+    /**
+     * Benutzerdefinierte Felder synchronisieren
+     */
+    protected function syncCustomFields(Member $member, array $fields): void
+    {
+        foreach ($fields as $fieldId => $value) {
+            CustomMemberValue::updateOrCreate(
+                [
+                    'member_id' => $member->id,
+                    'custom_member_field_id' => $fieldId,
+                ],
+                [
+                    'value' => $value,
+                ]
+            );
+        }
     }
 }

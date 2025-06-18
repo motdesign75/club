@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class TransactionController extends Controller
@@ -15,7 +16,17 @@ class TransactionController extends Controller
         $transactions = Transaction::forCurrentTenant()
             ->with(['account_from', 'account_to'])
             ->orderByDesc('date')
-            ->get();
+            ->get()
+            ->map(function ($transaction) {
+                // Prüfen, ob Datei vorhanden ist
+                if ($transaction->receipt_file) {
+                    $path = storage_path('app/public/receipts/' . $transaction->receipt_file);
+                    $transaction->receipt_exists = file_exists($path);
+                } else {
+                    $transaction->receipt_exists = false;
+                }
+                return $transaction;
+            });
 
         return view('transactions.index', compact('transactions'));
     }
@@ -34,49 +45,84 @@ class TransactionController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'account_from_id' => ['required', 'exists:accounts,id'],
             'account_to_id' => ['required', 'exists:accounts,id'],
+            'receipt_file' => ['nullable', 'file', 'mimes:jpeg,jpg,png,pdf', 'max:2048'],
         ]);
 
-        $validated['tenant_id'] = auth()->user()->tenant_id;
-        Transaction::create($validated);
+        // Belegnummer generieren
+        $latest = Transaction::orderBy('id', 'desc')->first();
+        $nextNumber = $latest ? $latest->id + 1 : 1;
+        $receiptNumber = 'TRX-' . date('Y') . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        $transaction = new Transaction();
+        $transaction->tenant_id = auth()->user()->tenant_id;
+        $transaction->date = $validated['date'];
+        $transaction->description = $validated['description'];
+        $transaction->amount = $validated['amount'];
+        $transaction->account_from_id = $validated['account_from_id'];
+        $transaction->account_to_id = $validated['account_to_id'];
+        $transaction->receipt_number = $receiptNumber;
+
+        if ($request->hasFile('receipt_file')) {
+            $file = $request->file('receipt_file');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->storeAs('public/receipts', $filename);
+            $transaction->receipt_file = $filename;
+        }
+
+        $transaction->save();
 
         return redirect()->route('transactions.index')->with('success', 'Buchung erfolgreich gespeichert.');
     }
 
-    public function edit(Transaction $transaction)
+    public function cancel(Transaction $transaction)
     {
         $this->authorizeTransaction($transaction);
-        $accounts = Account::forCurrentTenant()->orderBy('number')->get();
-        return view('transactions.edit', compact('transaction', 'accounts'));
+        return view('transactions.cancel', compact('transaction'));
     }
 
-    public function update(Request $request, Transaction $transaction)
+    public function cancelStore(Request $request, Transaction $transaction)
     {
         $this->authorizeTransaction($transaction);
 
-        $validated = $request->validate([
-            'date' => ['required', 'date'],
-            'description' => ['required', 'string', 'max:255'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
-            'account_from_id' => ['required', 'exists:accounts,id'],
-            'account_to_id' => ['required', 'exists:accounts,id'],
+        $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        $transaction->update($validated);
+        Transaction::create([
+            'tenant_id' => $transaction->tenant_id,
+            'date' => now()->format('Y-m-d'),
+            'description' => 'Storno: ' . $transaction->description . ' – Grund: ' . $request->reason,
+            'amount' => $transaction->amount,
+            'account_from_id' => $transaction->account_to_id,
+            'account_to_id' => $transaction->account_from_id,
+        ]);
 
-        return redirect()->route('transactions.index')->with('success', 'Buchung aktualisiert.');
+        return redirect()->route('transactions.index')->with('success', 'Buchung wurde storniert.');
     }
 
     public function destroy(Transaction $transaction)
     {
         $this->authorizeTransaction($transaction);
-        $transaction->delete();
-
-        return redirect()->route('transactions.index')->with('success', 'Buchung gelöscht.');
+        abort(403, 'Buchungen dürfen nicht gelöscht werden.');
     }
 
     protected function authorizeTransaction(Transaction $transaction)
     {
-        if ($transaction->tenant_id !== auth()->user()->tenant_id) {
+        $user = auth()->user();
+
+        Log::debug('🧪 authorizeTransaction', [
+            'auth_check' => auth()->check(),
+            'auth_user_id' => $user?->id,
+            'auth_tenant_id' => $user?->tenant_id,
+            'transaction_id' => $transaction->id,
+            'transaction_tenant_id' => $transaction->tenant_id,
+            'type_user_tenant_id' => gettype($user?->tenant_id),
+            'type_transaction_tenant_id' => gettype($transaction->tenant_id),
+            'ids_match_loose' => $user?->tenant_id == $transaction->tenant_id,
+            'ids_match_strict' => $user?->tenant_id === $transaction->tenant_id,
+        ]);
+
+        if (!$user || $transaction->tenant_id != $user->tenant_id) {
             abort(403, 'Kein Zugriff auf diese Buchung.');
         }
     }
@@ -94,43 +140,18 @@ class TransactionController extends Controller
             ->orderBy('date')
             ->get();
 
-        // Einnahmen: wenn das FROM-Konto vom Typ 'einnahme' ist
-        $income = $transactions->filter(fn($t) =>
-            optional($t->account_from)->type === 'einnahme'
-        )->sum('amount');
-
-        // Ausgaben: wenn das TO-Konto vom Typ 'ausgabe' ist
-        $expense = $transactions->filter(fn($t) =>
-            optional($t->account_to)->type === 'ausgabe'
-        )->sum('amount');
-
+        $income = $transactions->filter(fn($t) => optional($t->account_from)->type === 'einnahme')->sum('amount');
+        $expense = $transactions->filter(fn($t) => optional($t->account_to)->type === 'ausgabe')->sum('amount');
         $saldo = $income - $expense;
 
-        // Monatsweise Gruppierung
-        $byMonth = $transactions->groupBy(function ($t) {
-            return Carbon::parse($t->date)->format('Y-m');
-        })->map(function ($items) {
-            $income = $items->filter(fn($t) =>
-                optional($t->account_from)->type === 'einnahme'
-            )->sum('amount');
-
-            $expense = $items->filter(fn($t) =>
-                optional($t->account_to)->type === 'ausgabe'
-            )->sum('amount');
-
-            return [
-                'income' => $income,
-                'expense' => $expense,
-                'saldo' => $income - $expense,
-            ];
+        $byMonth = $transactions->groupBy(fn($t) => Carbon::parse($t->date)->format('Y-m'))->map(function ($items) {
+            $income = $items->filter(fn($t) => optional($t->account_from)->type === 'einnahme')->sum('amount');
+            $expense = $items->filter(fn($t) => optional($t->account_to)->type === 'ausgabe')->sum('amount');
+            return ['income' => $income, 'expense' => $expense, 'saldo' => $income - $expense];
         });
 
-        // Aktueller und Vormonat
         $currentMonthKey = Carbon::now()->format('Y-m');
         $previousMonthKey = Carbon::now()->subMonth()->format('Y-m');
-
-        $current = $byMonth->get($currentMonthKey, ['income' => 0, 'expense' => 0, 'saldo' => 0]);
-        $previous = $byMonth->get($previousMonthKey, ['income' => 0, 'expense' => 0, 'saldo' => 0]);
 
         return view('transactions.summary', [
             'summary' => [
@@ -139,8 +160,8 @@ class TransactionController extends Controller
                 'saldo' => $saldo,
                 'by_month' => $byMonth,
                 'transactions' => $transactions,
-                'current' => $current,
-                'previous' => $previous,
+                'current' => $byMonth->get($currentMonthKey, ['income' => 0, 'expense' => 0, 'saldo' => 0]),
+                'previous' => $byMonth->get($previousMonthKey, ['income' => 0, 'expense' => 0, 'saldo' => 0]),
             ],
             'start' => $start,
             'end' => $end,

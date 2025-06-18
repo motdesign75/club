@@ -84,6 +84,36 @@
             </div>
         </x-ui.formblock>
 
+        {{-- Block: Benutzerdefinierte Felder --}}
+        @if (isset($customFields) && count($customFields))
+        <x-ui.formblock icon="🧩" title="Weitere Angaben">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @foreach ($customFields as $field)
+                    @php
+                        $name = 'custom_fields[' . $field->id . ']';
+                        $label = $field->label;
+                        $value = old("custom_fields.{$field->id}", optional($member->customValues->firstWhere('custom_member_field_id', $field->id))->value);
+                    @endphp
+
+                    @if ($field->type === 'text')
+                        <x-ui.input :name="$name" :label="$label" :value="$value" />
+                    @elseif ($field->type === 'email')
+                        <x-ui.input type="email" :name="$name" :label="$label" :value="$value" />
+                    @elseif ($field->type === 'date')
+                        <x-ui.input type="date" :name="$name" :label="$label" :value="$value" />
+                    @elseif ($field->type === 'number')
+                        <x-ui.input type="number" :name="$name" :label="$label" :value="$value" />
+                    @elseif ($field->type === 'select')
+                        @php
+                            $options = collect(explode(',', $field->options))->mapWithKeys(fn($v) => [trim($v) => trim($v)]);
+                        @endphp
+                        <x-ui.select :name="$name" :label="$label" :options="$options" :selected="$value" />
+                    @endif
+                @endforeach
+            </div>
+        </x-ui.formblock>
+        @endif
+
         <div class="text-right">
             <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition duration-200">
                 💾 Änderungen speichern

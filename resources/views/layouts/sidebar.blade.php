@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <title>@yield('title', 'Clubano')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    {{-- AlpineJS für dynamische Interaktionen --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-900 antialiased">
 
@@ -17,6 +21,7 @@
         </div>
 
         <nav class="p-4 text-sm text-indigo-800 space-y-6">
+            <!-- Hauptnavigation -->
             <ul class="space-y-2">
                 <li>
                     <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('dashboard') ? 'bg-indigo-100 font-bold' : '' }}">
@@ -37,6 +42,7 @@
 
             <hr class="border-indigo-100">
 
+            <!-- Veranstaltungen -->
             <h2 class="text-xs uppercase text-indigo-400 pl-3">📅 Veranstaltungen</h2>
             <ul class="space-y-2">
                 <li>
@@ -53,6 +59,7 @@
 
             <hr class="border-indigo-100">
 
+            <!-- Finanzen -->
             <h2 class="text-xs uppercase text-indigo-400 pl-3">💰 Finanzen</h2>
             <ul class="space-y-2">
                 <li>
@@ -74,6 +81,7 @@
 
             <hr class="border-indigo-100">
 
+            <!-- Einstellungen -->
             <h2 class="text-xs uppercase text-indigo-400 pl-3">⚙️ Einstellungen</h2>
             <ul class="space-y-2">
                 <li>
@@ -96,10 +104,16 @@
                         🔐 Rollen
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('custom-fields.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('custom-fields.*') ? 'bg-indigo-100 font-bold' : '' }}">
+                        🧩 Eigene Felder
+                    </a>
+                </li>
             </ul>
 
             <hr class="border-indigo-100">
 
+            <!-- Logout -->
             <form method="POST" action="{{ route('logout') }}" class="pt-4">
                 @csrf
                 <button type="submit" class="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-800 rounded">
@@ -116,6 +130,6 @@
 
 </div>
 
-@stack('scripts') {{-- Wichtig für Chart.js oder zusätzliche Skripte --}}
+@stack('scripts')
 </body>
 </html>

@@ -10,17 +10,19 @@ use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CustomMemberFieldController;
+use App\Http\Controllers\ReceiptController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-// Dashboard (geschützt) – mit Events
+// Dashboard mit Event-Übersicht
 Route::get('/dashboard', [EventController::class, 'dashboardEvents'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-// Authentifizierte Routen
+// Geschützte Routen
 Route::middleware('auth')->group(function () {
 
     // Profil
@@ -28,50 +30,58 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // CSV-Mitgliederimport
-    Route::get('/import/mitglieder', [ImportController::class, 'showUploadForm'])->name('import.mitglieder');
-    Route::post('/import/mitglieder/preview', [ImportController::class, 'preview'])->name('import.mitglieder.preview');
-    Route::post('/import/mitglieder/confirm', [ImportController::class, 'confirm'])->name('import.mitglieder.confirm');
-
-    // Mitgliederverwaltung
+    // Mitglieder
     Route::resource('members', MemberController::class);
-
-    // DSGVO-Datenauskunft als PDF
     Route::get('/members/{member}/datenauskunft', [MemberController::class, 'exportDatenauskunft'])->name('members.datenauskunft');
     Route::get('/members/{member}/pdf', [MemberController::class, 'exportDatenauskunft'])->name('members.pdf');
 
-    // Vereinsprofil anzeigen und bearbeiten
+    // Vereinsprofil
     Route::get('/verein', [TenantController::class, 'show'])->name('tenant.show');
     Route::get('/verein/bearbeiten', [TenantController::class, 'edit'])->name('tenant.edit');
     Route::patch('/verein/bearbeiten', [TenantController::class, 'update'])->name('tenant.update');
 
-    // Event-Formular explizit definieren, damit kein Konflikt mit {event}
-    Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
-
-    // Resource-Routen für Events – ohne show & create
-    Route::resource('events', EventController::class)->except(['show', 'create']);
-
     // Mitgliedschaften
     Route::resource('memberships', MembershipController::class)->except(['show']);
 
-    // Rollenverwaltung
+    // CSV-Import
+    Route::get('/import/mitglieder', [ImportController::class, 'showUploadForm'])->name('import.mitglieder');
+    Route::post('/import/mitglieder/preview', [ImportController::class, 'preview'])->name('import.mitglieder.preview');
+    Route::post('/import/mitglieder/confirm', [ImportController::class, 'confirm'])->name('import.mitglieder.confirm');
+
+    // Veranstaltungen
+    Route::resource('events', EventController::class)->except(['show']);
+
+    // Rollen
     Route::get('/einstellungen/rollen', [RoleController::class, 'edit'])->name('roles.edit');
     Route::post('/einstellungen/rollen', [RoleController::class, 'update'])->name('roles.update');
 
-    // Finanzen – Kontenverwaltung
+    // Eigene Mitgliederfelder (Custom Fields)
+    Route::prefix('einstellungen/mitgliederfelder')->name('custom-fields.')->group(function () {
+        Route::get('/', [CustomMemberFieldController::class, 'index'])->name('index');
+        Route::get('/create', [CustomMemberFieldController::class, 'create'])->name('create');
+        Route::post('/', [CustomMemberFieldController::class, 'store'])->name('store');
+        Route::get('/{customMemberField}/edit', [CustomMemberFieldController::class, 'edit'])->name('edit');
+        Route::put('/{customMemberField}', [CustomMemberFieldController::class, 'update'])->name('update');
+        Route::delete('/{customMemberField}', [CustomMemberFieldController::class, 'destroy'])->name('destroy');
+    });
+
+    // Finanzen – Konten & Buchungen
     Route::resource('accounts', AccountController::class)->except(['show']);
+    Route::resource('transactions', TransactionController::class)->except(['show', 'edit', 'update']);
 
-    // Finanzen – Buchungen
-    Route::resource('transactions', TransactionController::class)->except(['show']);
-
-    // Einnahmen & Ausgaben Übersicht
     Route::get('/transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
 
-    // envcheck
+    // Stornieren
+    Route::get('/transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
+    Route::post('/transactions/{transaction}/cancel', [TransactionController::class, 'cancelStore'])->name('transactions.cancel.store');
+
+    // 📎 Belege anzeigen über Controller
+    Route::get('/beleg/{filename}', [ReceiptController::class, 'show'])->name('receipts.show');
+
+    // Debug
     Route::get('/envcheck', function () {
         dd(config('app.env'), config('app.debug'));
     });
-
 });
 
 require __DIR__.'/auth.php';

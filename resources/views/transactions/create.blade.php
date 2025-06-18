@@ -6,7 +6,8 @@
     <div class="max-w-2xl space-y-6">
         <h1 class="text-2xl font-bold text-gray-800">➕ Neue Buchung</h1>
 
-        <form method="POST" action="{{ route('transactions.store') }}" class="bg-white rounded shadow p-6 space-y-6">
+        <form method="POST" action="{{ route('transactions.store') }}" enctype="multipart/form-data"
+              class="bg-white rounded shadow p-6 space-y-6">
             @csrf
 
             <div>
@@ -67,6 +68,16 @@
                     @endforeach
                 </select>
                 @error('account_to_id') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="receipt_file" class="block text-sm font-medium text-gray-700">
+                    Beleg (PDF, JPG oder PNG – max. 2 MB)
+                </label>
+                <input type="file" name="receipt_file" id="receipt_file"
+                       accept=".pdf,.jpg,.jpeg,.png"
+                       class="mt-1 w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+                @error('receipt_file') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex justify-between mt-6">
