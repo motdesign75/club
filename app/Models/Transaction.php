@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\BelongsToTenant;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Account;
+use App\Scopes\CurrentTenantScope;
 
 class Transaction extends Model
 {
-    use BelongsToTenant;
-
     protected $fillable = [
         'tenant_id',
         'date',
@@ -17,6 +17,17 @@ class Transaction extends Model
         'account_from_id',
         'account_to_id',
     ];
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new CurrentTenantScope);
+
+        static::creating(function ($transaction) {
+            if (Auth::check()) {
+                $transaction->tenant_id = Auth::user()->tenant_id;
+            }
+        });
+    }
 
     public function account_from()
     {
@@ -29,8 +40,23 @@ class Transaction extends Model
     }
 
     /**
+     * Beziehung: Transaktion gehört zu einem Verein (Mandant)
+     */
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    /**
+     * Scope: Filter für aktuellen Mandanten
+     */
+    public function scopeForCurrentTenant($query)
+    {
+        return $query->where('tenant_id', auth()->user()->tenant_id);
+    }
+
+    /**
      * Prüft, ob es sich um eine Einnahme handelt.
-     * Einnahme: Geld kommt z. B. auf ein Einnahmenkonto oder von außen auf Bank/Kasse.
      */
     public function isIncome(): bool
     {
@@ -39,7 +65,6 @@ class Transaction extends Model
 
     /**
      * Prüft, ob es sich um eine Ausgabe handelt.
-     * Ausgabe: Geld wird von Bank/Kasse auf ein Ausgabenkonto überwiesen.
      */
     public function isExpense(): bool
     {

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use App\Scopes\CurrentTenantScope;
 
 class Membership extends Model
 {
@@ -12,17 +14,27 @@ class Membership extends Model
     protected $fillable = [
         'tenant_id',
         'name',
-        'fee', // ← hier war vorher 'amount', das ist falsch
+        'fee',
         'billing_cycle',
     ];
 
-    /**
-     * Automatisches Casting von fee auf float,
-     * damit Laravel intern korrekt mit Dezimalwerten arbeitet.
-     */
     protected $casts = [
         'fee' => 'float',
     ];
+
+    /**
+     * Global Scope für Mandanten einfügen und tenant_id automatisch setzen
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new CurrentTenantScope);
+
+        static::creating(function ($membership) {
+            if (Auth::check()) {
+                $membership->tenant_id = Auth::user()->tenant_id;
+            }
+        });
+    }
 
     /**
      * Beziehung: Eine Mitgliedschaft kann viele Mitglieder haben.

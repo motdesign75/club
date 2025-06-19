@@ -4,12 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-// use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Auth;
+use App\Scopes\CurrentTenantScope;
 
 class Member extends Model
 {
     use HasFactory;
-    // use SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -58,6 +58,20 @@ class Member extends Model
     ];
 
     /**
+     * Automatischer Scope: Nur Mitglieder des eingeloggten Vereins anzeigen
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new CurrentTenantScope);
+
+        static::creating(function ($member) {
+            if (Auth::check()) {
+                $member->tenant_id = Auth::user()->tenant_id;
+            }
+        });
+    }
+
+    /**
      * Beziehung: Mitglied gehört zu einem Verein (Mandant)
      */
     public function tenant()
@@ -82,7 +96,7 @@ class Member extends Model
     }
 
     /**
-     * Scope: Filter für aktuellen Mandanten
+     * Optionaler Scope: Manuell nach aktuellem Tenant filtern (nicht mehr nötig, aber belassen wir)
      */
     public function scopeForCurrentTenant($query)
     {
@@ -90,7 +104,7 @@ class Member extends Model
     }
 
     /**
-     * Accessor: Vollständiger Name (ggf. mit Titel)
+     * Accessor: Vollständiger Name
      */
     public function getFullNameAttribute()
     {

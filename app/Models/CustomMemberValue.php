@@ -30,4 +30,14 @@ class CustomMemberValue extends Model
     {
         return $this->belongsTo(CustomMemberField::class, 'custom_member_field_id');
     }
+
+    /**
+     * Scope: Nur Werte des aktuellen Mandanten (über Member)
+     */
+    public function scopeForCurrentTenant($query)
+    {
+        return $query->whereHas('member', function ($q) {
+            $q->where('tenant_id', auth()->user()->tenant_id);
+        });
+    }
 }
