@@ -113,12 +113,40 @@
         </div>
 
         <div x-show="tab === 'birthdays'">
-            @forelse ($birthdays as $member)
-                <div class="py-2 border-b">{{ $member->first_name }} {{ $member->last_name }} – 🎂 {{ $member->birthday->format('d.m.') }}</div>
-            @empty
-                <p class="text-gray-500">Keine Geburtstage im aktuellen Monat.</p>
-            @endforelse
+    {{-- Tabellenkopf nur auf md+ anzeigen --}}
+    <div class="hidden md:grid md:grid-cols-3 font-semibold border-b pb-1 text-sm text-gray-600">
+        <div>Name</div>
+        <div>Geburtstag</div>
+        <div>Alter</div>
+    </div>
+
+    @forelse ($birthdays->sortBy(fn($m) => $m->birthday->day) as $member)
+        @php
+            $nextAge = $member->birthday->age + 1;
+            $isRound = $nextAge % 10 === 0;
+        @endphp
+
+        <div class="border-b py-2 md:grid md:grid-cols-3 text-sm {{ $isRound ? 'bg-blue-50 font-bold text-blue-800' : '' }}">
+            <div>
+                <span class="md:hidden font-semibold text-gray-500">Name:</span>
+                {{ $member->first_name }} {{ $member->last_name }}
+            </div>
+            <div>
+                <span class="md:hidden font-semibold text-gray-500">Geburtstag:</span>
+                {{ $member->birthday->format('d.m.') }}
+            </div>
+            <div>
+                <span class="md:hidden font-semibold text-gray-500">Alter:</span>
+                wird {{ $nextAge }} 
+                @if ($isRound)
+                    🎉
+                @endif
+            </div>
         </div>
+    @empty
+        <p class="text-gray-500 mt-2">Keine Geburtstage im aktuellen Monat.</p>
+    @endforelse
+</div>
 
         <div x-show="tab === 'anniversaries'">
             @forelse ($anniversaries as $member)
