@@ -14,8 +14,8 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
+<body class="font-sans antialiased bg-gray-100 text-gray-800">
+    <div class="min-h-screen flex flex-col">
         @include('layouts.navigation')
 
         <!-- Page Heading -->
@@ -28,9 +28,17 @@
         @endisset
 
         <!-- Page Content -->
-        <main>
+        <main class="flex-grow">
             @yield('content')
         </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t text-center text-sm text-gray-500 py-6">
+            <p>
+                &copy; {{ date('Y') }} Clubano – alle Rechte vorbehalten. 
+                <a href="{{ route('impressum') }}" class="text-blue-600 hover:underline">Impressum</a>
+            </p>
+        </footer>
     </div>
 </body>
 </html>

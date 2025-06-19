@@ -17,7 +17,7 @@
     <!-- Sidebar -->
     <aside class="bg-white w-full md:w-64 shadow-md md:fixed h-auto md:h-screen z-20">
         <div class="p-6 text-xl font-semibold text-indigo-700 border-b">
-            🏛 Clubano
+            🏛 Clubano beta
         </div>
 
         <nav class="p-4 text-sm text-indigo-800 space-y-6">
@@ -126,6 +126,12 @@
     <!-- Main Content -->
     <main class="flex-1 md:ml-64 p-6">
         @yield('content')
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-sm text-gray-500 border-t pt-6">
+            &copy; {{ date('Y') }} Clubano – alle Rechte vorbehalten.
+            <a href="{{ route('impressum') }}" class="text-blue-600 hover:underline">Impressum</a>
+        </footer>
     </main>
 
 </div>

@@ -22,6 +22,9 @@ Route::get('/dashboard', [EventController::class, 'dashboardEvents'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+// Impressum (öffentlich erreichbar)
+Route::view('/impressum', 'impressum')->name('impressum');
+
 // Geschützte Routen
 Route::middleware('auth')->group(function () {
 
@@ -68,7 +71,6 @@ Route::middleware('auth')->group(function () {
     // Finanzen – Konten & Buchungen
     Route::resource('accounts', AccountController::class)->except(['show']);
     Route::resource('transactions', TransactionController::class)->except(['show', 'edit', 'update']);
-
     Route::get('/transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
 
     // Stornieren
