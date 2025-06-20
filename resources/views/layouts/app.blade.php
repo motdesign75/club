@@ -14,8 +14,11 @@
     <!-- Alpine.js (für das Hamburger-Menü) -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <!-- Scripts -->
+    <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- Platz für zusätzliche Stylesheets (z. B. Trix) -->
+    @stack('head')
 </head>
 <body class="font-sans antialiased bg-gray-100 text-gray-900">
 
@@ -42,5 +45,7 @@
         </div>
     </div>
 
+    {{-- Platz für zusätzliche Scripts (z. B. Trix oder Chart.js) --}}
+    @stack('scripts')
 </body>
 </html>

@@ -5,10 +5,14 @@
     <title>@yield('title', 'Clubano')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    {{-- Vite CSS & JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- AlpineJS für dynamische Interaktionen --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    {{-- Platz für zusätzliche Styles (z. B. Trix) --}}
+    @stack('head')
 </head>
 <body class="bg-gray-100 text-gray-900 antialiased">
 
@@ -136,6 +140,7 @@
 
 </div>
 
+{{-- Stack für zusätzliche Scripts (z. B. Trix) --}}
 @stack('scripts')
 </body>
 </html>

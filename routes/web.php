@@ -12,6 +12,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CustomMemberFieldController;
 use App\Http\Controllers\ReceiptController;
+use App\Http\Controllers\ProtocolController; // ← NEU
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -79,6 +80,14 @@ Route::middleware('auth')->group(function () {
 
     // 📎 Belege anzeigen über Controller
     Route::get('/beleg/{filename}', [ReceiptController::class, 'show'])->name('receipts.show');
+
+    // 📄 Protokolle
+    Route::get('/protokolle', [ProtocolController::class, 'index'])->name('protocols.index');
+    Route::get('/protokolle/neu', [ProtocolController::class, 'create'])->name('protocols.create');
+    Route::post('/protokolle', [ProtocolController::class, 'store'])->name('protocols.store');
+    Route::get('/protokolle/{protocol}', [ProtocolController::class, 'show'])->name('protocols.show');
+    Route::get('/protokolle/{protocol}/bearbeiten', [ProtocolController::class, 'edit'])->name('protocols.edit'); // ← NEU
+    Route::put('/protokolle/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');         // ← NEU
 
     // Debug
     Route::get('/envcheck', function () {
