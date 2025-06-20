@@ -26,4 +26,11 @@ class Protocol extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // Neue Beziehung: Teilnehmer (Mitglieder)
+    public function participants()
+    {
+        return $this->belongsToMany(Member::class, 'protocol_member')
+            ->withTimestamps();
+    }
 }

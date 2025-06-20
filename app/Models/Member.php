@@ -96,6 +96,15 @@ class Member extends Model
     }
 
     /**
+     * Beziehung: Mitglied nimmt an mehreren Protokollen teil
+     */
+    public function protocols()
+    {
+        return $this->belongsToMany(Protocol::class, 'protocol_member')
+            ->withTimestamps();
+    }
+
+    /**
      * Optionaler Scope: Manuell nach aktuellem Tenant filtern (nicht mehr nötig, aber belassen wir)
      */
     public function scopeForCurrentTenant($query)

@@ -85,6 +85,23 @@
 
             <hr class="border-indigo-100">
 
+            <!-- Dokumente -->
+            <h2 class="text-xs uppercase text-indigo-400 pl-3">📁 Dokumente</h2>
+            <ul class="space-y-2">
+                <li>
+                    <a href="{{ route('protocols.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('protocols.index') ? 'bg-indigo-100 font-bold' : '' }}">
+                        📄 Protokolle
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('protocols.create') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('protocols.create') ? 'bg-indigo-100 font-bold' : '' }}">
+                        ➕ Neues Protokoll
+                    </a>
+                </li>
+            </ul>
+
+            <hr class="border-indigo-100">
+
             <!-- Einstellungen -->
             <h2 class="text-xs uppercase text-indigo-400 pl-3">⚙️ Einstellungen</h2>
             <ul class="space-y-2">

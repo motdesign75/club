@@ -47,6 +47,22 @@
             @enderror
         </div>
 
+        {{-- Teilnehmer --}}
+        <div class="mb-6">
+            <label for="participant_ids" class="block text-sm font-medium text-gray-700">Teilnehmer</label>
+            <select id="participant_ids" name="participant_ids[]" multiple
+                    class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200">
+                @foreach ($members as $member)
+                    <option value="{{ $member->id }}" {{ collect(old('participant_ids'))->contains($member->id) ? 'selected' : '' }}>
+                        {{ $member->full_name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('participant_ids')
+                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
         {{-- Inhalt mit Trix --}}
         <div class="mb-6">
             <label for="content" class="block text-sm font-medium text-gray-700">Inhalt</label>

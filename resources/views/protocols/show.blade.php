@@ -10,6 +10,15 @@
     <div class="mb-6 text-sm text-gray-600 space-y-1">
         <p><strong>Typ:</strong> {{ $protocol->type }}</p>
         <p><strong>Erstellt am:</strong> {{ $protocol->created_at->format('d.m.Y H:i') }}</p>
+
+        @if($protocol->participants && $protocol->participants->count() > 0)
+            <p><strong>Teilnehmer:</strong></p>
+            <ul class="list-disc list-inside text-gray-700">
+                @foreach ($protocol->participants as $member)
+                    <li>{{ $member->full_name }}</li>
+                @endforeach
+            </ul>
+        @endif
     </div>
 
     {{-- Inhalt (Trix-HTML) --}}

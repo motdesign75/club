@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Protocol;
+use App\Models\Member;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,24 +21,29 @@ class ProtocolController extends Controller
 
     public function create()
     {
-        return view('protocols.create');
+        $members = Member::forCurrentTenant()->orderBy('last_name')->get();
+        return view('protocols.create', compact('members'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'   => 'required|string|max:255',
-            'type'    => 'required|string|max:255',
-            'content' => 'required|string',
+            'title'           => 'required|string|max:255',
+            'type'            => 'required|string|max:255',
+            'content'         => 'required|string',
+            'participant_ids' => 'nullable|array',
+            'participant_ids.*' => 'exists:members,id',
         ]);
 
-        Protocol::create([
+        $protocol = Protocol::create([
             'tenant_id' => auth()->user()->tenant_id,
             'user_id'   => Auth::id(),
             'title'     => $validated['title'],
             'type'      => $validated['type'],
             'content'   => $validated['content'],
         ]);
+
+        $protocol->participants()->sync($validated['participant_ids'] ?? []);
 
         return redirect()->route('protocols.index')->with('success', 'Protokoll erfolgreich gespeichert.');
     }
@@ -57,7 +63,10 @@ class ProtocolController extends Controller
             abort(403);
         }
 
-        return view('protocols.edit', compact('protocol'));
+        $members = Member::forCurrentTenant()->orderBy('last_name')->get();
+        $selected = $protocol->participants->pluck('id')->toArray();
+
+        return view('protocols.edit', compact('protocol', 'members', 'selected'));
     }
 
     public function update(Request $request, Protocol $protocol)
@@ -67,12 +76,20 @@ class ProtocolController extends Controller
         }
 
         $validated = $request->validate([
-            'title'   => 'required|string|max:255',
-            'type'    => 'required|string|max:255',
-            'content' => 'required|string',
+            'title'           => 'required|string|max:255',
+            'type'            => 'required|string|max:255',
+            'content'         => 'required|string',
+            'participant_ids' => 'nullable|array',
+            'participant_ids.*' => 'exists:members,id',
         ]);
 
-        $protocol->update($validated);
+        $protocol->update([
+            'title'   => $validated['title'],
+            'type'    => $validated['type'],
+            'content' => $validated['content'],
+        ]);
+
+        $protocol->participants()->sync($validated['participant_ids'] ?? []);
 
         return redirect()->route('protocols.index')->with('success', 'Protokoll erfolgreich aktualisiert.');
     }
