@@ -64,24 +64,30 @@
             <hr class="border-indigo-100">
 
             <!-- Finanzen -->
-            <h2 class="text-xs uppercase text-indigo-400 pl-3">💰 Finanzen</h2>
-            <ul class="space-y-2">
-                <li>
-                    <a href="{{ route('accounts.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('accounts.index') ? 'bg-indigo-100 font-bold' : '' }}">
-                        📒 Kontenplan
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('transactions.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('transactions.*') ? 'bg-indigo-100 font-bold' : '' }}">
-                        📑 Buchungen
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('transactions.summary') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('transactions.summary') ? 'bg-indigo-100 font-bold' : '' }}">
-                        📈 Einnahmen & Ausgaben
-                    </a>
-                </li>
-            </ul>
+<h2 class="text-xs uppercase text-indigo-400 pl-3">💰 Finanzen</h2>
+<ul class="space-y-2">
+    <li>
+        <a href="{{ route('accounts.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('accounts.index') ? 'bg-indigo-100 font-bold' : '' }}">
+            📒 Kontenplan
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('transactions.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('transactions.*') ? 'bg-indigo-100 font-bold' : '' }}">
+            📑 Buchungen
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('transactions.summary') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('transactions.summary') ? 'bg-indigo-100 font-bold' : '' }}">
+            📈 Einnahmen & Ausgaben
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('invoices.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('invoices.*') ? 'bg-indigo-100 font-bold' : '' }}">
+            🧾 Rechnungen
+        </a>
+    </li>
+</ul>
+
 
             <hr class="border-indigo-100">
 
@@ -132,20 +138,16 @@
                 </li>
             </ul>
 
-            @auth
-                <hr class="border-indigo-100">
+            <hr class="border-indigo-100">
 
-                <!-- Logout -->
-                <ul class="space-y-2">
-                    <li>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-800 rounded">
-                                🚪 Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+            <!-- Logout (nur wenn eingeloggt) -->
+            @auth
+                <form method="POST" action="{{ route('logout') }}" class="pt-4">
+                    @csrf
+                    <button type="submit" class="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-800 rounded">
+                        🚪 Logout
+                    </button>
+                </form>
             @endauth
         </nav>
     </aside>

@@ -28,8 +28,16 @@ auth.json
 # Laravel: temporäre Verzeichnisse
 /storage/*.key
 /storage/pail
-/storage/app/public
+
+# 🚫 Storage-Ordner ignorieren, außer public
+/storage/*
+!/storage/app
+!/storage/app/public
+
+# Verlinkter Storage-Ordner im öffentlichen Verzeichnis (Symlink)
 /public/storage
+
+# Build-Dateien von Vite
 /public/hot
 /public/build
 
@@ -59,4 +67,3 @@ Homestead.json
 # E-Mail-Verifizierungsansichten (optional)
 !resources/views/emails/
 !resources/views/emails/**
-
