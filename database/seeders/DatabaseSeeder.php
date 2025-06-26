@@ -11,11 +11,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Keine Benutzer erstellen, da bereits echte Vereinsdaten existieren
-
         // Nur die SKR42-Konten für den Finanzbereich laden
         $this->call([
             AccountSeeder::class,
         ]);
+
+        // ⚠️ Demo-Verein NUR manuell per php artisan db:seed --class=DemoVereinSeeder starten!
     }
 }

@@ -12,21 +12,21 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CustomMemberFieldController;
 use App\Http\Controllers\ReceiptController;
-use App\Http\Controllers\ProtocolController; // ← NEU
+use App\Http\Controllers\ProtocolController;
+use App\Http\Controllers\InvoiceNumberRangeController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\PdfTestController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-// Dashboard mit Event-Übersicht
 Route::get('/dashboard', [EventController::class, 'dashboardEvents'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-// Impressum – öffentlich zugänglich
 Route::view('/impressum', 'impressum')->name('impressum');
 
-// Geschützte Routen
 Route::middleware('auth')->group(function () {
 
     // Profil
@@ -47,6 +47,13 @@ Route::middleware('auth')->group(function () {
     // Mitgliedschaften
     Route::resource('memberships', MembershipController::class)->except(['show']);
 
+    // Nummernkreise für Rechnungen
+    Route::resource('number-ranges', InvoiceNumberRangeController::class)->names('number_ranges');
+
+    // Beitragsrechnungen (inkl. Detailansicht)
+    Route::resource('invoices', InvoiceController::class)->only(['index', 'create', 'store', 'show']);
+    Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf'); // ← NEU
+
     // CSV-Import
     Route::get('/import/mitglieder', [ImportController::class, 'showUploadForm'])->name('import.mitglieder');
     Route::post('/import/mitglieder/preview', [ImportController::class, 'preview'])->name('import.mitglieder.preview');
@@ -59,7 +66,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/einstellungen/rollen', [RoleController::class, 'edit'])->name('roles.edit');
     Route::post('/einstellungen/rollen', [RoleController::class, 'update'])->name('roles.update');
 
-    // Eigene Mitgliederfelder (Custom Fields)
+    // Eigene Mitgliederfelder
     Route::prefix('einstellungen/mitgliederfelder')->name('custom-fields.')->group(function () {
         Route::get('/', [CustomMemberFieldController::class, 'index'])->name('index');
         Route::get('/create', [CustomMemberFieldController::class, 'create'])->name('create');
@@ -73,21 +80,22 @@ Route::middleware('auth')->group(function () {
     Route::resource('accounts', AccountController::class)->except(['show']);
     Route::resource('transactions', TransactionController::class)->except(['show', 'edit', 'update']);
     Route::get('/transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
-
-    // Stornieren
     Route::get('/transactions/{transaction}/cancel', [TransactionController::class, 'cancel'])->name('transactions.cancel');
     Route::post('/transactions/{transaction}/cancel', [TransactionController::class, 'cancelStore'])->name('transactions.cancel.store');
 
-    // 📎 Belege anzeigen über Controller
+    // Belege
     Route::get('/beleg/{filename}', [ReceiptController::class, 'show'])->name('receipts.show');
 
-    // 📄 Protokolle
+    // Protokolle
     Route::get('/protokolle', [ProtocolController::class, 'index'])->name('protocols.index');
     Route::get('/protokolle/neu', [ProtocolController::class, 'create'])->name('protocols.create');
     Route::post('/protokolle', [ProtocolController::class, 'store'])->name('protocols.store');
     Route::get('/protokolle/{protocol}', [ProtocolController::class, 'show'])->name('protocols.show');
-    Route::get('/protokolle/{protocol}/bearbeiten', [ProtocolController::class, 'edit'])->name('protocols.edit'); // ← NEU
-    Route::put('/protokolle/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');         // ← NEU
+    Route::get('/protokolle/{protocol}/bearbeiten', [ProtocolController::class, 'edit'])->name('protocols.edit');
+    Route::put('/protokolle/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
+    
+    //Test-PDF
+    Route::get('/pdf-test', [PdfTestController::class, 'test'])->name('pdf.test');
 
     // Debug
     Route::get('/envcheck', function () {

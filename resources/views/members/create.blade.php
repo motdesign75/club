@@ -6,14 +6,26 @@
 <div class="max-w-5xl mx-auto space-y-10 text-gray-800">
     <h1 class="text-3xl font-extrabold text-indigo-600">➕ Neues Mitglied</h1>
 
+    {{-- Globale Fehlermeldungen --}}
+    @if ($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            <strong>Es sind Fehler aufgetreten:</strong>
+            <ul class="list-disc pl-5 mt-2">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <form action="{{ route('members.store') }}" method="POST" enctype="multipart/form-data" class="bg-white shadow-2xl ring-1 ring-gray-200 rounded-2xl p-8 space-y-10">
         @csrf
 
         {{-- Block: Mitglied --}}
         <x-ui.formblock icon="🧍" title="Mitglied">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <x-ui.select name="gender" label="Geschlecht" :options="['weiblich'=>'weiblich','männlich'=>'männlich','divers'=>'divers']" :selected="old('gender')" />
-                <x-ui.select name="salutation" label="Anrede" :options="['Frau'=>'Frau','Herr'=>'Herr','Liebe'=>'Liebe','Lieber'=>'Lieber','Hallo'=>'Hallo']" :selected="old('salutation')" />
+                <x-ui.select name="gender" label="Geschlecht" :options="['weiblich'=>'weiblich','männlich'=>'männlich','divers'=>'divers']" :selected="old('gender')" required />
+                <x-ui.select name="salutation" label="Anrede" :options="['Frau'=>'Frau','Herr'=>'Herr','Liebe'=>'Liebe','Lieber'=>'Lieber','Hallo'=>'Hallo']" :selected="old('salutation')" required />
                 <x-ui.input name="title" label="Titel" :value="old('title')" />
                 <x-ui.input name="first_name" label="Vorname" :value="old('first_name')" required />
                 <x-ui.input name="last_name" label="Nachname" :value="old('last_name')" required />
@@ -21,7 +33,7 @@
                 <x-ui.input type="date" name="birthday" label="Geburtstag" :value="old('birthday')" />
 
                 <div>
-                    <x-ui.label for="photo">Profilfoto</x-ui.label>
+                    <x-ui.label for="photo">Profilfoto <span class="sr-only">(optional)</span></x-ui.label>
                     <input type="file" name="photo" id="photo" accept="image/*" class="w-full file:border file:bg-indigo-100 file:text-indigo-800 file:rounded-lg file:px-4 file:py-2">
                 </div>
             </div>
@@ -30,18 +42,7 @@
         {{-- Block: Mitgliedschaft --}}
         <x-ui.formblock icon="📝" title="Mitgliedschaft">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <x-ui.label for="membership_id">Mitgliedschaft</x-ui.label>
-                    <select name="membership_id" id="membership_id" class="w-full rounded border-gray-300">
-                        <option value="">– bitte wählen –</option>
-                        @foreach($memberships as $membership)
-                            <option value="{{ $membership->id }}" {{ old('membership_id') == $membership->id ? 'selected' : '' }}>
-                                {{ $membership->name }} – {{ number_format($membership->fee, 2, ',', '.') }} € / {{ $membership->billing_cycle }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
+                <x-ui.select name="membership_id" label="Mitgliedschaft" :options="$memberships->pluck('name', 'id')" :selected="old('membership_id')" required />
                 <x-ui.input name="member_id" label="Mitgliedsnummer" :value="old('member_id')" />
                 <x-ui.input type="date" name="entry_date" label="Eintritt" :value="old('entry_date')" />
                 <x-ui.input type="date" name="exit_date" label="Austritt" :value="old('exit_date')" />

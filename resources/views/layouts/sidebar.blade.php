@@ -132,15 +132,21 @@
                 </li>
             </ul>
 
-            <hr class="border-indigo-100">
+            @auth
+                <hr class="border-indigo-100">
 
-            <!-- Logout -->
-            <form method="POST" action="{{ route('logout') }}" class="pt-4">
-                @csrf
-                <button type="submit" class="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-800 rounded">
-                    🚪 Logout
-                </button>
-            </form>
+                <!-- Logout -->
+                <ul class="space-y-2">
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-800 rounded">
+                                🚪 Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            @endauth
         </nav>
     </aside>
 

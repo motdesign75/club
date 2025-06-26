@@ -25,16 +25,15 @@
                 <input type="text" name="name" value="{{ old('name', $tenant->name) }}" required class="mt-1 block w-full border-gray-300 rounded shadow-sm">
             </div>
 
-            {{-- Slug (optional) --}}
+            {{-- Slug --}}
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
                 <input type="text" name="slug" value="{{ old('slug', $tenant->slug) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
                 <p class="text-xs text-gray-500 mt-1">Der Slug identifiziert den Verein eindeutig (z. B. für URLs).</p>
             </div>
 
-            {{-- Grid für Adresse & Kontakt --}}
+            {{-- Adresse & Kontakt --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
                     <input type="text" name="address" value="{{ old('address', $tenant->address) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
@@ -66,7 +65,47 @@
                 </div>
             </div>
 
-            {{-- Submit --}}
+            {{-- Bankdaten --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">IBAN</label>
+                    <input type="text" name="iban" value="{{ old('iban', $tenant->iban) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">BIC</label>
+                    <input type="text" name="bic" value="{{ old('bic', $tenant->bic) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Bankname</label>
+                    <input type="text" name="bank_name" value="{{ old('bank_name', $tenant->bank_name) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Vorsitzender</label>
+                    <input type="text" name="chairman_name" value="{{ old('chairman_name', $tenant->chairman_name) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
+                </div>
+            </div>
+
+            {{-- PDF-Briefbogen Upload --}}
+            <div class="pt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Briefbogen (PDF-Hintergrund)</label>
+                @if($tenant->pdf_template)
+                    <p class="text-sm text-gray-600 mb-2">Aktuell: {{ basename($tenant->pdf_template) }}</p>
+                @endif
+                <input type="file" name="pdf_template" accept="application/pdf" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
+            </div>
+
+            {{-- Briefbogen verwenden --}}
+<div>
+    <label class="inline-flex items-center">
+        <input type="checkbox" name="use_letterhead" value="1" {{ old('use_letterhead', $tenant->use_letterhead) ? 'checked' : '' }} class="rounded border-gray-300">
+        <span class="ml-2 text-sm text-gray-700">Briefbogen als Hintergrund in PDF verwenden</span>
+    </label>
+</div>
+
+            {{-- Speichern --}}
             <div class="pt-4">
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
                     💾 Speichern

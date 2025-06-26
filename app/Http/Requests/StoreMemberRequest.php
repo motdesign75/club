@@ -14,8 +14,8 @@ class StoreMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'gender'            => 'nullable|in:weiblich,männlich,divers',
-            'salutation'        => 'nullable|in:Frau,Herr,Liebe,Lieber,Hallo',
+            'gender'            => 'required|in:weiblich,männlich,divers',
+            'salutation'        => 'required|in:Frau,Herr,Liebe,Lieber,Hallo',
             'title'             => 'nullable|string|max:255',
             'first_name'        => 'required|string|max:255',
             'last_name'         => 'required|string|max:255',
@@ -34,8 +34,20 @@ class StoreMemberRequest extends FormRequest
             'city'              => 'nullable|string|max:255',
             'country'           => 'nullable|string|max:255',
             'care_of'           => 'nullable|string|max:255',
-            'membership_id'     => 'nullable|exists:memberships,id',
+            'membership_id'     => 'required|exists:memberships,id',
             'photo'             => 'nullable|image|max:2048',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'first_name.required'     => 'Der Vorname ist erforderlich.',
+            'last_name.required'      => 'Der Nachname ist erforderlich.',
+            'gender.required'         => 'Bitte wählen Sie ein Geschlecht.',
+            'salutation.required'     => 'Bitte wählen Sie eine Anrede.',
+            'membership_id.required'  => 'Bitte wählen Sie eine Mitgliedschaft.',
+            'membership_id.exists'    => 'Die gewählte Mitgliedschaft ist ungültig.',
         ];
     }
 }

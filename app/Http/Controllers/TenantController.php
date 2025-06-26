@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -12,15 +13,12 @@ class TenantController extends Controller
     public function show(): View
     {
         $tenant = Auth::user()->tenant;
-
-        // Achte darauf, dass die View tenant/show.blade.php heißt und layouts.sidebar erweitert
         return view('tenant.show', compact('tenant'));
     }
 
     public function edit(): View
     {
         $tenant = Auth::user()->tenant;
-
         return view('tenant.edit', compact('tenant'));
     }
 
@@ -38,17 +36,36 @@ class TenantController extends Controller
             'phone' => 'nullable|string|max:255',
             'register_number' => 'nullable|string|max:255',
             'logo' => 'nullable|image|max:2048',
+
+            // Neue Felder
+            'iban' => 'nullable|string|max:255',
+            'bic' => 'nullable|string|max:255',
+            'bank_name' => 'nullable|string|max:255',
+            'chairman_name' => 'nullable|string|max:255',
+            'pdf_template' => 'nullable|mimes:pdf|max:2048',
+            'use_letterhead' => 'nullable|boolean',
         ]);
 
+        // Logo speichern
         if ($request->hasFile('logo')) {
-            // altes Logo löschen, wenn vorhanden
             if ($tenant->logo) {
                 Storage::disk('public')->delete($tenant->logo);
             }
-
             $validated['logo'] = $request->file('logo')->store('logos', 'public');
         }
 
+        // PDF-Briefbogen speichern
+        if ($request->hasFile('pdf_template')) {
+            if ($tenant->pdf_template) {
+                Storage::disk('public')->delete($tenant->pdf_template);
+            }
+            $validated['pdf_template'] = $request->file('pdf_template')->store('briefbogen', 'public');
+        }
+
+        // Checkbox-Wert setzen
+        $validated['use_letterhead'] = $request->has('use_letterhead');
+
+        // Update durchführen
         $tenant->update($validated);
 
         return redirect()->route('tenant.show')->with('success', 'Vereinsdaten wurden aktualisiert.');

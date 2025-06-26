@@ -14,16 +14,27 @@ class MemberService
      */
     public function create(Request $request): void
     {
-        $data = $request->validated();
+        $validated = $request->validated();
 
-        $data['tenant_id'] = app('currentTenant')->id;
-        $data['country'] = $data['country'] ?? 'DE'; // fallback für Pflichtfelder
+        $data = array_merge($validated, [
+            'tenant_id' => app('currentTenant')->id,
+            'country'   => $validated['country'] ?? 'DE',
+        ]);
 
         if ($request->hasFile('photo')) {
             $data['photo'] = $request->file('photo')->store('photos', 'public');
         }
 
-        $member = Member::create($data);
+        // Nur Felder speichern, die auch im Model fillable sind
+        $allowed = [
+            'tenant_id', 'gender', 'salutation', 'title', 'first_name', 'last_name',
+            'organization', 'birthday', 'member_id', 'entry_date', 'exit_date',
+            'termination_date', 'email', 'mobile', 'landline', 'street',
+            'address_addition', 'zip', 'city', 'country', 'care_of',
+            'membership_id', 'photo'
+        ];
+
+        $member = Member::create(array_intersect_key($data, array_flip($allowed)));
 
         // Benutzerdefinierte Felder speichern
         $this->syncCustomFields($member, $request->input('custom_fields', []));
@@ -34,10 +45,11 @@ class MemberService
      */
     public function update(Request $request, Member $member): void
     {
-        $data = $request->validated();
+        $validated = $request->validated();
 
-        // Wenn kein Land übermittelt wurde, alten Wert beibehalten
-        $data['country'] = $data['country'] ?? $member->country;
+        $data = array_merge($validated, [
+            'country' => $validated['country'] ?? $member->country,
+        ]);
 
         if ($request->hasFile('photo')) {
             if ($member->photo && Storage::disk('public')->exists($member->photo)) {
@@ -47,7 +59,15 @@ class MemberService
             $data['photo'] = $request->file('photo')->store('photos', 'public');
         }
 
-        $member->update($data);
+        $allowed = [
+            'gender', 'salutation', 'title', 'first_name', 'last_name',
+            'organization', 'birthday', 'member_id', 'entry_date', 'exit_date',
+            'termination_date', 'email', 'mobile', 'landline', 'street',
+            'address_addition', 'zip', 'city', 'country', 'care_of',
+            'membership_id', 'photo'
+        ];
+
+        $member->update(array_intersect_key($data, array_flip($allowed)));
 
         // Benutzerdefinierte Felder aktualisieren
         $this->syncCustomFields($member, $request->input('custom_fields', []));

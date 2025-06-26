@@ -12,28 +12,30 @@ class Tenant extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'slug',
-        'email',
-        'logo',
-        'address',
-        'zip',
-        'city',
-        'phone',
-        'register_number',
+    'name',
+    'slug',
+    'email',
+    'logo',
+    'address',
+    'zip',
+    'city',
+    'phone',
+    'register_number',
+    'iban',
+    'bic',
+    'bank_name',
+    'chairman',
+    'letterhead',
+    'pdf_template',
+    'chairman_name',
+    'use_letterhead', // <-- hinzufügen
     ];
 
-    /**
-     * Beziehung: Ein Tenant hat viele Benutzer
-     */
     public function users()
     {
         return $this->hasMany(User::class);
     }
 
-    /**
-     * Setze automatisch einen Invite-Code bei Erstellung
-     */
     protected static function booted(): void
     {
         static::creating(function (Tenant $tenant) {
