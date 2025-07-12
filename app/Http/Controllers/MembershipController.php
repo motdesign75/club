@@ -22,20 +22,19 @@ class MembershipController extends Controller
 
     public function store(Request $request)
     {
-        // DEBUG: Fee umwandeln (Komma → Punkt) für Validierung
+        // Betrag mit Komma als Dezimalzeichen → Punkt ersetzen
         $request->merge([
-            'fee' => str_replace(',', '.', $request->input('fee'))
+            'amount' => str_replace(',', '.', $request->input('amount'))
         ]);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'fee' => 'nullable|numeric|min:0',
-            'billing_cycle' => 'required|in:monatlich,quartalsweise,halbjährlich,jährlich',
+            'amount' => 'nullable|numeric|min:0',
+            'interval' => 'required|in:monatlich,vierteljährlich,halbjährlich,jährlich',
         ]);
 
         $validated['tenant_id'] = auth()->user()->tenant_id;
 
-        // DEBUG: Logge Eingaben zur Kontrolle – später auskommentieren
         Log::debug('Membership Store Request Input:', $request->all());
         Log::debug('Membership Validated Data:', $validated);
 
@@ -55,18 +54,16 @@ class MembershipController extends Controller
     {
         $this->authorizeTenant($membership);
 
-        // DEBUG: Fee umwandeln (Komma → Punkt)
         $request->merge([
-            'fee' => str_replace(',', '.', $request->input('fee'))
+            'amount' => str_replace(',', '.', $request->input('amount'))
         ]);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'fee' => 'nullable|numeric|min:0',
-            'billing_cycle' => 'required|in:monatlich,quartalsweise,halbjährlich,jährlich',
+            'amount' => 'nullable|numeric|min:0',
+            'interval' => 'required|in:monatlich,vierteljährlich,halbjährlich,jährlich',
         ]);
 
-        // DEBUG: Logge Daten zur Kontrolle – später auskommentieren
         Log::debug('Membership Update Request Input:', $request->all());
         Log::debug('Membership Validated Data (Update):', $validated);
 
@@ -85,7 +82,7 @@ class MembershipController extends Controller
     }
 
     /**
-     * Schützt die Daten des aktuellen Vereins.
+     * Schutz vor Zugriff auf fremde Daten.
      */
     private function authorizeTenant(Membership $membership)
     {

@@ -10,27 +10,31 @@
             @csrf
 
             <div class="space-y-4 bg-white p-6 rounded shadow">
+                {{-- Bezeichnung --}}
                 <div>
-                    <label class="block font-medium text-sm text-gray-700">Bezeichnung</label>
-                    <input type="text" name="name" value="{{ old('name') }}" required class="w-full mt-1 border rounded px-3 py-2">
+                    <label for="name" class="block font-medium text-sm text-gray-700">Bezeichnung</label>
+                    <input type="text" name="name" id="name" value="{{ old('name') }}" required class="w-full mt-1 border rounded px-3 py-2">
                 </div>
 
+                {{-- Beitrag --}}
                 <div>
-                    <label class="block font-medium text-sm text-gray-700">Beitrag (€)</label>
-                    <input type="number" name="fee" step="0.01" min="0" value="{{ old('fee') }}" class="w-full mt-1 border rounded px-3 py-2">
+                    <label for="amount" class="block font-medium text-sm text-gray-700">Beitrag (€)</label>
+                    <input type="number" name="amount" id="amount" step="0.01" min="0" value="{{ old('amount') }}" required class="w-full mt-1 border rounded px-3 py-2">
                 </div>
 
+                {{-- Abrechnungsintervall --}}
                 <div>
-                    <label class="block font-medium text-sm text-gray-700">Abrechnung</label>
-                    <select name="billing_cycle" required class="w-full mt-1 border rounded px-3 py-2">
-                        <option value="monatlich">monatlich</option>
-                        <option value="quartalsweise">vierteljährlich</option>
-                        <option value="halbjährlich">halbjährlich</option>
-                        <option value="jährlich" selected>jährlich</option>
+                    <label for="interval" class="block font-medium text-sm text-gray-700">Abrechnungsintervall</label>
+                    <select name="interval" id="interval" required class="w-full mt-1 border rounded px-3 py-2">
+                        <option value="monatlich" {{ old('interval') === 'monatlich' ? 'selected' : '' }}>monatlich</option>
+                        <option value="vierteljährlich" {{ old('interval') === 'vierteljährlich' ? 'selected' : '' }}>vierteljährlich</option>
+                        <option value="halbjährlich" {{ old('interval') === 'halbjährlich' ? 'selected' : '' }}>halbjährlich</option>
+                        <option value="jährlich" {{ old('interval', 'jährlich') === 'jährlich' ? 'selected' : '' }}>jährlich</option>
                     </select>
                 </div>
 
-                <div class="text-right">
+                {{-- Speichern --}}
+                <div class="text-right pt-4">
                     <x-primary-button>💾 Speichern</x-primary-button>
                 </div>
             </div>

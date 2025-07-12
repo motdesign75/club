@@ -11,6 +11,9 @@
     {{-- AlpineJS für dynamische Interaktionen --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    {{-- Chart.js für Diagramme --}}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     {{-- Platz für zusätzliche Styles (z. B. Trix) --}}
     @stack('head')
 </head>
@@ -24,7 +27,7 @@
             🏛 Clubano beta
         </div>
 
-        <nav class="p-4 text-sm text-indigo-800 space-y-6">
+        <nav class="p-4 text-sm text-indigo-800 space-y-6" aria-label="Hauptnavigation">
             <!-- Hauptnavigation -->
             <ul class="space-y-2">
                 <li>
@@ -64,30 +67,29 @@
             <hr class="border-indigo-100">
 
             <!-- Finanzen -->
-<h2 class="text-xs uppercase text-indigo-400 pl-3">💰 Finanzen</h2>
-<ul class="space-y-2">
-    <li>
-        <a href="{{ route('accounts.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('accounts.index') ? 'bg-indigo-100 font-bold' : '' }}">
-            📒 Kontenplan
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('transactions.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('transactions.*') ? 'bg-indigo-100 font-bold' : '' }}">
-            📑 Buchungen
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('transactions.summary') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('transactions.summary') ? 'bg-indigo-100 font-bold' : '' }}">
-            📈 Einnahmen & Ausgaben
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('invoices.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('invoices.*') ? 'bg-indigo-100 font-bold' : '' }}">
-            🧾 Rechnungen
-        </a>
-    </li>
-</ul>
-
+            <h2 class="text-xs uppercase text-indigo-400 pl-3">💰 Finanzen</h2>
+            <ul class="space-y-2">
+                <li>
+                    <a href="{{ route('accounts.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('accounts.index') ? 'bg-indigo-100 font-bold' : '' }}">
+                        📒 Kontenplan
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('transactions.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('transactions.*') ? 'bg-indigo-100 font-bold' : '' }}">
+                        📑 Buchungen
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('transactions.summary') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('transactions.summary') ? 'bg-indigo-100 font-bold' : '' }}">
+                        📈 Einnahmen & Ausgaben
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('invoices.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('invoices.*') ? 'bg-indigo-100 font-bold' : '' }}">
+                        🧾 Rechnungen
+                    </a>
+                </li>
+            </ul>
 
             <hr class="border-indigo-100">
 
@@ -159,13 +161,14 @@
         </div>
 
         <footer class="text-center text-sm text-gray-500 mt-6 py-4 border-t">
-            &copy; {{ now()->year }} Clubano · <a href="{{ route('impressum') }}" class="text-blue-600 hover:underline">Impressum</a>
+            &copy; {{ now()->year }} Clubano · 
+            <a href="{{ route('impressum') }}" class="text-blue-600 hover:underline">Impressum</a>
         </footer>
     </main>
 
 </div>
 
-{{-- Stack für zusätzliche Scripts (z. B. Trix) --}}
+{{-- Stack für zusätzliche Scripts (z. B. Trix, Chart.js) --}}
 @stack('scripts')
 </body>
 </html>

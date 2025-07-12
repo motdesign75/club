@@ -30,6 +30,8 @@ class Member extends Model
         'exit_date',
         'termination_date',
         'membership_id',
+        'membership_amount',     // 👈 NEU
+        'membership_interval',   // 👈 NEU
 
         // Block: Kommunikation
         'email',
@@ -57,9 +59,6 @@ class Member extends Model
         'country_name',
     ];
 
-    /**
-     * Automatischer Scope: Nur Mitglieder des eingeloggten Vereins anzeigen
-     */
     protected static function booted(): void
     {
         static::addGlobalScope(new CurrentTenantScope);
@@ -71,59 +70,37 @@ class Member extends Model
         });
     }
 
-    /**
-     * Beziehung: Mitglied gehört zu einem Verein (Mandant)
-     */
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    /**
-     * Beziehung: Mitglied hat eine Mitgliedschaft
-     */
     public function membership()
     {
         return $this->belongsTo(Membership::class);
     }
 
-    /**
-     * Beziehung: Benutzerdefinierte Felder (Werte)
-     */
     public function customValues()
     {
         return $this->hasMany(CustomMemberValue::class);
     }
 
-    /**
-     * Beziehung: Mitglied nimmt an mehreren Protokollen teil
-     */
     public function protocols()
     {
-        return $this->belongsToMany(Protocol::class, 'protocol_member')
-            ->withTimestamps();
+        return $this->belongsToMany(Protocol::class, 'protocol_member')->withTimestamps();
     }
 
-    /**
-     * Optionaler Scope: Manuell nach aktuellem Tenant filtern (nicht mehr nötig, aber belassen wir)
-     */
     public function scopeForCurrentTenant($query)
     {
         return $query->where('tenant_id', auth()->user()->tenant_id);
     }
 
-    /**
-     * Accessor: Vollständiger Name
-     */
     public function getFullNameAttribute()
     {
         $parts = array_filter([$this->title, $this->first_name, $this->last_name]);
         return implode(' ', $parts);
     }
 
-    /**
-     * Accessor: Land als ausgeschriebener Name
-     */
     public function getCountryNameAttribute()
     {
         return config('countries.list')[$this->country] ?? $this->country;

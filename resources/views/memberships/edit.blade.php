@@ -11,31 +11,62 @@
             @method('PATCH')
 
             <div class="space-y-4 bg-white p-6 rounded shadow">
+                {{-- Bezeichnung --}}
                 <div>
-                    <label class="block font-medium text-sm text-gray-700">Bezeichnung</label>
-                    <input type="text" name="name" value="{{ old('name', $membership->name) }}" required class="w-full mt-1 border rounded px-3 py-2">
+                    <label for="name" class="block font-medium text-sm text-gray-700">Bezeichnung</label>
+                    <input 
+                        type="text" 
+                        name="name" 
+                        id="name" 
+                        value="{{ old('name', $membership->name) }}" 
+                        required 
+                        class="w-full mt-1 border rounded px-3 py-2"
+                    >
                 </div>
 
+                {{-- Beitrag --}}
                 <div>
-                    <label class="block font-medium text-sm text-gray-700">Beitrag (€)</label>
-                    <input type="number" name="fee" step="0.01" min="0" value="{{ old('fee', $membership->fee) }}" class="w-full mt-1 border rounded px-3 py-2">
+                    <label for="amount" class="block font-medium text-sm text-gray-700">Beitrag (€)</label>
+                    <input 
+                        type="number" 
+                        name="amount" 
+                        id="amount" 
+                        step="0.01" 
+                        min="0" 
+                        value="{{ old('amount', $membership->amount) }}" 
+                        required 
+                        class="w-full mt-1 border rounded px-3 py-2"
+                    >
                 </div>
 
+                {{-- Abrechnungsintervall --}}
                 <div>
-                    <label class="block font-medium text-sm text-gray-700">Abrechnung</label>
-                    <select name="billing_cycle" required class="w-full mt-1 border rounded px-3 py-2">
+                    <label for="interval" class="block font-medium text-sm text-gray-700">Abrechnungsintervall</label>
+                    <select 
+                        name="interval" 
+                        id="interval" 
+                        required 
+                        class="w-full mt-1 border rounded px-3 py-2"
+                    >
                         @php
-                            $cycles = ['monatlich' => 'monatlich', 'quartalsweise' => 'vierteljährlich', 'halbjährlich' => 'halbjährlich', 'jährlich' => 'jährlich'];
+                            $intervals = [
+                                'monatlich' => 'monatlich',
+                                'vierteljährlich' => 'vierteljährlich',
+                                'halbjährlich' => 'halbjährlich',
+                                'jährlich' => 'jährlich',
+                            ];
                         @endphp
-                        @foreach($cycles as $key => $label)
-                            <option value="{{ $key }}" @if(old('billing_cycle', $membership->billing_cycle) === $key) selected @endif>
+
+                        @foreach ($intervals as $key => $label)
+                            <option value="{{ $key }}" {{ old('interval', $membership->interval) === $key ? 'selected' : '' }}>
                                 {{ $label }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="text-right">
+                {{-- Speichern --}}
+                <div class="text-right pt-4">
                     <x-primary-button>💾 Aktualisieren</x-primary-button>
                 </div>
             </div>

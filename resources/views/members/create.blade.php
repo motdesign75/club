@@ -44,7 +44,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <x-ui.select name="membership_id" label="Mitgliedschaft" :options="$memberships->pluck('name', 'id')" :selected="old('membership_id')" required />
                 <x-ui.input name="member_id" label="Mitgliedsnummer" :value="old('member_id')" />
-                <x-ui.input type="date" name="entry_date" label="Eintritt" :value="old('entry_date')" />
+                <x-ui.input type="date" name="entry_date" label="Eintritt" :value="old('entry_date', now()->toDateString())" required />
                 <x-ui.input type="date" name="exit_date" label="Austritt" :value="old('exit_date')" />
                 <x-ui.input type="date" name="termination_date" label="Kündigungsdatum" :value="old('termination_date')" />
             </div>

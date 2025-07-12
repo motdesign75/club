@@ -17,9 +17,6 @@ class MemberController extends Controller
         protected MemberService $memberService
     ) {}
 
-    /**
-     * Mitgliederübersicht
-     */
     public function index()
     {
         $tenantId = app('currentTenant')->id;
@@ -51,27 +48,18 @@ class MemberController extends Controller
         return view('members.index', compact('members', 'sortField', 'sortDirection'));
     }
 
-    /**
-     * Neues Mitglied – Formular
-     */
     public function create(MembershipService $membershipService)
     {
         $memberships = $membershipService->getForTenant();
         return view('members.create', compact('memberships'));
     }
 
-    /**
-     * Neues Mitglied speichern
-     */
     public function store(StoreMemberRequest $request)
     {
         $this->memberService->create($request);
         return redirect()->route('members.index')->with('success', 'Mitglied erfolgreich hinzugefügt.');
     }
 
-    /**
-     * Einzelansicht Mitglied
-     */
     public function show(Member $member)
     {
         $this->authorizeMember($member);
@@ -85,9 +73,6 @@ class MemberController extends Controller
         return view('members.show', compact('member', 'customFields'));
     }
 
-    /**
-     * Mitglied bearbeiten – Formular
-     */
     public function edit(Member $member, MembershipService $membershipService)
     {
         $this->authorizeMember($member);
@@ -102,19 +87,14 @@ class MemberController extends Controller
         return view('members.edit', compact('member', 'memberships', 'customFields'));
     }
 
-    /**
-     * Mitglied aktualisieren
-     */
     public function update(UpdateMemberRequest $request, Member $member)
     {
         $this->authorizeMember($member);
         $this->memberService->update($request, $member);
+
         return redirect()->route('members.index')->with('success', 'Mitglied erfolgreich aktualisiert.');
     }
 
-    /**
-     * Mitglied löschen
-     */
     public function destroy(Member $member)
     {
         $this->authorizeMember($member);
@@ -127,9 +107,6 @@ class MemberController extends Controller
         return redirect()->route('members.index')->with('success', 'Mitglied gelöscht.');
     }
 
-    /**
-     * DSGVO-Datenauskunft als PDF
-     */
     public function exportDatenauskunft(Member $member)
     {
         $this->authorizeMember($member);
@@ -138,9 +115,6 @@ class MemberController extends Controller
         return $pdf->download("Datenauskunft_{$member->last_name}_{$member->id}.pdf");
     }
 
-    /**
-     * Zugriffsschutz – Mitglied gehört zu Tenant?
-     */
     private function authorizeMember(Member $member): void
     {
         abort_if($member->tenant_id !== app('currentTenant')->id, 403, 'Unberechtigter Zugriff.');

@@ -16,6 +16,7 @@ use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\InvoiceNumberRangeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PdfTestController;
+use App\Http\Controllers\LicenseController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -52,7 +53,7 @@ Route::middleware('auth')->group(function () {
 
     // Beitragsrechnungen (inkl. Detailansicht)
     Route::resource('invoices', InvoiceController::class)->only(['index', 'create', 'store', 'show']);
-    Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf'); // ← NEU
+    Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
 
     // CSV-Import
     Route::get('/import/mitglieder', [ImportController::class, 'showUploadForm'])->name('import.mitglieder');
@@ -93,9 +94,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/protokolle/{protocol}', [ProtocolController::class, 'show'])->name('protocols.show');
     Route::get('/protokolle/{protocol}/bearbeiten', [ProtocolController::class, 'edit'])->name('protocols.edit');
     Route::put('/protokolle/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
-    
-    //Test-PDF
+
+    // Test-PDF
     Route::get('/pdf-test', [PdfTestController::class, 'test'])->name('pdf.test');
+
+    // Stripe Lizenz-Upgrade
+    Route::get('/license/upgrade', [LicenseController::class, 'upgrade'])->name('license.upgrade');
+    Route::post('/license/checkout', [LicenseController::class, 'checkout'])->name('license.checkout');
 
     // Debug
     Route::get('/envcheck', function () {

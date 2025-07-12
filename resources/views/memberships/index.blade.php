@@ -34,18 +34,18 @@
                         <tr class="border-t">
                             <td class="px-4 py-2">{{ $membership->name }}</td>
                             <td class="px-4 py-2">
-                                {{ number_format($membership->fee ?? 0, 2, ',', '.') }}
+                                {{ number_format($membership->amount ?? 0, 2, ',', '.') }}
                             </td>
                             <td class="px-4 py-2">
                                 @php
                                     $labels = [
                                         'monatlich' => 'monatlich',
-                                        'quartalsweise' => 'vierteljährlich',
+                                        'vierteljährlich' => 'vierteljährlich',
                                         'halbjährlich' => 'halbjährlich',
                                         'jährlich' => 'jährlich',
                                     ];
                                 @endphp
-                                {{ $labels[$membership->billing_cycle] ?? ucfirst($membership->billing_cycle) }}
+                                {{ $labels[$membership->interval] ?? ucfirst($membership->interval) }}
                             </td>
                             <td class="px-4 py-2 text-right space-x-2">
                                 <a href="{{ route('memberships.edit', $membership) }}" class="text-yellow-600 hover:underline">Bearbeiten</a>

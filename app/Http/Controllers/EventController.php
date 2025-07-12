@@ -25,6 +25,11 @@ class EventController extends Controller
             ->take(5)
             ->get();
 
+        // Timeline: Alle Events in den nächsten 7 Tagen
+        $timeline = $events->filter(function ($event) {
+            return \Carbon\Carbon::parse($event->start)->isBetween(now(), now()->addDays(7));
+        });
+
         // Mitgliederzahl
         $membersCount = Member::where('tenant_id', $tenantId)->count();
 
@@ -58,6 +63,7 @@ class EventController extends Controller
 
         return view('dashboard', compact(
             'events',
+            'timeline',
             'tenant',
             'membersCount',
             'licenseType',
