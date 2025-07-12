@@ -1,51 +1,78 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ open: false }">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ open: false }" class="h-full bg-gray-100" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', config('app.name', 'Clubano'))</title>
 
-    <title>{{ config('app.name', 'Clubano') }}</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- Alpine.js (für das Hamburger-Menü) -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <!-- Styles & Scripts -->
+    {{-- Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- Platz für zusätzliche Stylesheets (z. B. Trix) -->
+    {{-- Alpine.js --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     @stack('head')
 </head>
-<body class="font-sans antialiased bg-gray-100 text-gray-900">
+<body class="h-full antialiased font-sans text-gray-800">
 
-    <div class="min-h-screen flex flex-col md:flex-row">
+    <!-- Mobile Header mit Hamburger -->
+    <header class="sm:hidden bg-white shadow-md px-4 py-3 flex justify-between items-center">
+        <div class="text-xl font-semibold">Clubano</div>
+        <button @click="open = !open" aria-label="Menü öffnen">
+            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" stroke-width="2"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+    </header>
 
-        {{-- Sidebar --}}
-        @include('layouts.navigation')
-
-        {{-- Hauptinhalt --}}
-        <div class="flex-1 flex flex-col md:ml-64">
-            {{-- Header (optional) --}}
-            @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
-
-            {{-- Page Content --}}
-            <main class="p-4 sm:p-6 lg:p-8">
-                {{ $slot }}
-            </main>
+    <!-- Mobile Sidebar -->
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform -translate-x-full"
+         x-transition:enter-end="opacity-100 transform translate-x-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform translate-x-0"
+         x-transition:leave-end="opacity-0 transform -translate-x-full"
+         class="sm:hidden fixed top-0 left-0 z-50 w-64 h-full bg-white shadow-lg overflow-y-auto"
+         style="display: none;">
+        <div class="relative h-full">
+            <button @click="open = false" class="absolute top-3 right-3 text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <div class="p-4 mt-10">
+                @include('layouts.sidebar')
+            </div>
         </div>
     </div>
 
-    {{-- Platz für zusätzliche Scripts (z. B. Trix oder Chart.js) --}}
+    <!-- Overlay zum Schließen -->
+    <div x-show="open"
+         x-transition.opacity
+         class="sm:hidden fixed inset-0 bg-black bg-opacity-25 z-40"
+         style="display: none;"
+         @click="open = false">
+    </div>
+
+    <!-- Desktop + Content -->
+    <div class="flex h-full">
+
+        <!-- Sidebar Desktop -->
+        <aside class="hidden sm:block w-64 bg-white shadow-md h-screen fixed left-0 top-0 z-30">
+            @include('layouts.sidebar')
+        </aside>
+
+        <!-- Hauptinhalt -->
+        <div class="flex-1 sm:ml-64 min-h-screen bg-gray-100">
+            @yield('content')
+        </div>
+    </div>
+
     @stack('scripts')
 </body>
 </html>

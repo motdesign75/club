@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 
 @section('title', 'Dashboard')
 
@@ -45,19 +45,19 @@
 
     </div>
 
-    {{-- Vereinsaktivitäten Tabs --}}
+    {{-- Vereinsaktivitäten: Livewire-Komponente --}}
     <div class="bg-white rounded-xl shadow-md p-6 mt-6">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">📊 Vereinsaktivitäten im {{ now()->translatedFormat('F') }}</h2>
         <livewire:dashboard-member-stats />
     </div>
 
-    {{-- Mitgliederentwicklung Chart --}}
+    {{-- Mitgliederentwicklung: Livewire-Chart --}}
     <div class="bg-white rounded-xl shadow-md p-6 mt-6">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">📈 Mitgliederentwicklung {{ now()->year }}</h2>
         <livewire:dashboard-member-chart />
     </div>
 
-    {{-- Timeline – Nächste 7 Tage --}}
+    {{-- Timeline: Nächste 7 Tage --}}
     <div class="bg-white rounded-xl shadow-md p-6 mt-6">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">🕒 Nächste Termine (7 Tage)</h2>
 

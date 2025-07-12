@@ -1,4 +1,4 @@
-@extends('layouts.sidebar')
+@extends('layouts.app')
 @include('layouts.navigation')
 
 @section('title', 'Mitglied: ' . $member->first_name . ' ' . $member->last_name)
