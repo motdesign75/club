@@ -22,7 +22,7 @@
         </button>
     </header>
 
-    <!-- Mobile Sidebar -->
+    <!-- Mobile Sidebar --> kanaller
     <div x-show="open"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 transform -translate-x-full"
