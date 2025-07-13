@@ -1,4 +1,4 @@
-<div class="p-6 text-xl font-semibold text-indigo-700 border-b">
+<div class="p-6 text-xl font-semibold text-indigo-700 border-b border-indigo-100 bg-white sticky top-0 z-30">
     🏛 Clubano beta
 </div>
 
@@ -24,7 +24,6 @@
 
     <hr class="border-indigo-100">
 
-    <!-- Veranstaltungen -->
     <h2 class="text-xs uppercase text-indigo-400 pl-3">📅 Veranstaltungen</h2>
     <ul class="space-y-2">
         <li>
@@ -41,7 +40,6 @@
 
     <hr class="border-indigo-100">
 
-    <!-- Finanzen -->
     <h2 class="text-xs uppercase text-indigo-400 pl-3">💰 Finanzen</h2>
     <ul class="space-y-2">
         <li>
@@ -68,7 +66,6 @@
 
     <hr class="border-indigo-100">
 
-    <!-- Dokumente -->
     <h2 class="text-xs uppercase text-indigo-400 pl-3">📁 Dokumente</h2>
     <ul class="space-y-2">
         <li>
@@ -85,7 +82,6 @@
 
     <hr class="border-indigo-100">
 
-    <!-- Einstellungen -->
     <h2 class="text-xs uppercase text-indigo-400 pl-3">⚙️ Einstellungen</h2>
     <ul class="space-y-2">
         <li>
@@ -117,7 +113,6 @@
 
     <hr class="border-indigo-100">
 
-    <!-- Logout -->
     @auth
         <form method="POST" action="{{ route('logout') }}" class="pt-4">
             @csrf

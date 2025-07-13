@@ -1,28 +1,23 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ open: false }" class="h-full bg-gray-100" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ open: false }" class="h-full bg-gray-100">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', config('app.name', 'Clubano'))</title>
 
-    {{-- Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    {{-- Alpine.js --}}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     @stack('head')
 </head>
 <body class="h-full antialiased font-sans text-gray-800">
 
-    <!-- Mobile Header mit Hamburger -->
-    <header class="sm:hidden bg-white shadow-md px-4 py-3 flex justify-between items-center">
+    <!-- Mobiler Header -->
+    <header class="sm:hidden fixed top-0 left-0 right-0 z-40 bg-white shadow-md px-4 py-3 flex justify-between items-center">
         <div class="text-xl font-semibold">Clubano</div>
         <button @click="open = !open" aria-label="Menü öffnen">
             <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" stroke-width="2"
                  viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M4 6h16M4 12h16M4 18h16"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
         </button>
     </header>
@@ -41,8 +36,7 @@
             <button @click="open = false" class="absolute top-3 right-3 text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
                      viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M6 18L18 6M6 6l12 12"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
             <div class="p-4 mt-10">
@@ -51,7 +45,7 @@
         </div>
     </div>
 
-    <!-- Overlay zum Schließen -->
+    <!-- Overlay -->
     <div x-show="open"
          x-transition.opacity
          class="sm:hidden fixed inset-0 bg-black bg-opacity-25 z-40"
@@ -59,18 +53,18 @@
          @click="open = false">
     </div>
 
-    <!-- Desktop + Content -->
-    <div class="flex h-full">
+    <!-- Desktop Layout -->
+    <div class="flex">
 
-        <!-- Sidebar Desktop -->
-        <aside class="hidden sm:block w-64 bg-white shadow-md h-screen fixed left-0 top-0 z-30">
+        <!-- Sidebar (Desktop) -->
+        <aside class="hidden sm:block fixed top-0 left-0 h-screen w-64 bg-white shadow z-30">
             @include('layouts.sidebar')
         </aside>
 
-        <!-- Hauptinhalt -->
-        <div class="flex-1 sm:ml-64 min-h-screen bg-gray-100">
+        <!-- Content -->
+        <main class="flex-1 w-full sm:ml-64 pt-[56px] sm:pt-6 px-4">
             @yield('content')
-        </div>
+        </main>
     </div>
 
     @stack('scripts')
