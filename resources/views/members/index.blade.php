@@ -13,11 +13,33 @@
         </a>
     </div>
 
+    <!-- Tabs für Statusfilter -->
+    <div class="mt-6 border-b border-gray-200">
+        <nav class="-mb-px flex space-x-6 overflow-x-auto">
+            @php
+                $statuses = [
+                    '' => 'Alle',
+                    'aktiv' => 'Aktiv',
+                    'ehemalig' => 'Ehemalig',
+                    'zukünftig' => 'Zukünftig'
+                ];
+                $currentStatus = request('status', '');
+            @endphp
+            @foreach($statuses as $key => $label)
+                <a href="{{ route('members.index', array_merge(request()->except('page'), ['status' => $key])) }}"
+                   class="whitespace-nowrap px-3 py-2 font-medium text-sm border-b-2 {{ $currentStatus === $key ? 'border-[#2954A3] text-[#2954A3]' : 'border-transparent text-gray-500 hover:text-[#2954A3]' }}">
+                    {{ $label }}
+                </a>
+            @endforeach
+        </nav>
+    </div>
+
     <!-- Suchleiste -->
     <form method="GET" action="{{ route('members.index') }}" class="mt-4">
         <input type="text" name="search" value="{{ request('search') }}"
                placeholder="Mitglied suchen..."
                class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-[#2954A3] focus:outline-none">
+        <input type="hidden" name="status" value="{{ request('status') }}">
     </form>
 
     <!-- Tabelle -->
@@ -34,6 +56,7 @@
                         <th class="px-4 py-3">Nachname</th>
                         <th class="px-4 py-3 hidden md:table-cell">E-Mail</th>
                         <th class="px-4 py-3 hidden md:table-cell">Mobil</th>
+                        <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3 text-right">Aktion</th>
                     </tr>
                 </thead>
@@ -57,6 +80,14 @@
                             <td class="px-4 py-3">{{ $member->last_name }}</td>
                             <td class="px-4 py-3 hidden md:table-cell">{{ $member->email ?? '—' }}</td>
                             <td class="px-4 py-3 hidden md:table-cell">{{ $member->mobile ?? '—' }}</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-block px-2 py-1 rounded text-xs font-medium
+                                    @if ($member->status === 'aktiv') bg-green-100 text-green-800
+                                    @elseif ($member->status === 'ehemalig') bg-gray-200 text-gray-800
+                                    @else bg-blue-100 text-blue-800 @endif">
+                                    {{ ucfirst($member->status) }}
+                                </span>
+                            </td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex justify-end items-center gap-3">
                                     <a href="{{ route('members.show', $member) }}" title="Anzeigen"

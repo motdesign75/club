@@ -30,8 +30,8 @@ class Member extends Model
         'exit_date',
         'termination_date',
         'membership_id',
-        'membership_amount',     // 👈 NEU
-        'membership_interval',   // 👈 NEU
+        'membership_amount',
+        'membership_interval',
 
         // Block: Kommunikation
         'email',
@@ -57,6 +57,7 @@ class Member extends Model
     protected $appends = [
         'full_name',
         'country_name',
+        'status',
     ];
 
     protected static function booted(): void
@@ -104,5 +105,27 @@ class Member extends Model
     public function getCountryNameAttribute()
     {
         return config('countries.list')[$this->country] ?? $this->country;
+    }
+
+    /**
+     * Automatischer Status eines Mitglieds
+     */
+    public function getStatusAttribute(): string
+    {
+        $today = now();
+
+        if ($this->exit_date && $this->exit_date->isPast()) {
+            return 'ehemalig';
+        }
+
+        if ($this->entry_date && $this->entry_date->isFuture()) {
+            return 'zukünftig';
+        }
+
+        if ($this->entry_date && (!$this->exit_date || $this->exit_date->isFuture())) {
+            return 'aktiv';
+        }
+
+        return 'zukünftig';
     }
 }

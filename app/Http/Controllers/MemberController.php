@@ -10,6 +10,7 @@ use App\Http\Requests\StoreMemberRequest;
 use App\Http\Requests\UpdateMemberRequest;
 use App\Services\MemberService;
 use App\Services\MembershipService;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class MemberController extends Controller
 {
@@ -23,6 +24,7 @@ class MemberController extends Controller
 
         $query = Member::where('tenant_id', $tenantId);
 
+        // 🔍 Suche
         if (request()->filled('search')) {
             $search = request('search');
             $query->where(function ($q) use ($search) {
@@ -33,6 +35,7 @@ class MemberController extends Controller
             });
         }
 
+        // 🔀 Sortierung
         $sortField = request('sort', 'last_name');
         $sortDirection = request('direction', 'asc');
         $allowedFields = ['first_name', 'last_name', 'email', 'member_id', 'entry_date'];
@@ -41,9 +44,25 @@ class MemberController extends Controller
             $sortField = 'last_name';
         }
 
-        $members = $query->orderBy($sortField, $sortDirection)
-                         ->paginate(25)
-                         ->appends(request()->query());
+        // 📌 Mitglieder laden (noch ohne Pagination!)
+        $allMembers = $query->orderBy($sortField, $sortDirection)->get();
+
+        // 📌 Status-Filter auf Collection anwenden
+        if (request()->filled('status')) {
+            $status = request('status');
+            $allMembers = $allMembers->filter(fn($m) => $m->status === $status)->values();
+        }
+
+        // 📄 Pagination manuell durchführen
+        $perPage = 25;
+        $currentPage = request()->get('page', 1);
+        $members = new LengthAwarePaginator(
+            $allMembers->forPage($currentPage, $perPage),
+            $allMembers->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('members.index', compact('members', 'sortField', 'sortDirection'));
     }
