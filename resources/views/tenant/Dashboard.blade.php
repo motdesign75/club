@@ -1,31 +1,70 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800">
-            {{ __('Vereinsprofil') }}
-        </h2>
+        <h1 class="text-3xl font-extrabold text-[#2954A3]">
+            🏢 Vereinsprofil
+        </h1>
     </x-slot>
 
-    <div class="py-12 max-w-4xl mx-auto space-y-4">
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+    <div class="py-10">
+        <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-2xl p-8 ring-1 ring-gray-200 space-y-8 text-gray-800">
 
+            {{-- Vereinslogo --}}
             @if ($tenant->logo)
-                <div class="mb-4">
-                    <img src="{{ asset('storage/' . $tenant->logo) }}" alt="Vereinslogo" class="h-24">
+                <div class="flex justify-center">
+                    <img src="{{ asset('storage/' . $tenant->logo) }}"
+                         alt="Logo des Vereins {{ $tenant->name }}"
+                         class="h-28 object-contain rounded shadow">
                 </div>
             @endif
 
-            <p><strong>Name:</strong> {{ $tenant->name }}</p>
-            <p><strong>Slug:</strong> {{ $tenant->slug }}</p>
-            <p><strong>E-Mail:</strong> {{ $tenant->email }}</p>
-            <p><strong>Adresse:</strong> {{ $tenant->address }}</p>
-            <p><strong>PLZ / Ort:</strong> {{ $tenant->zip }} {{ $tenant->city }}</p>
-            <p><strong>Telefon:</strong> {{ $tenant->phone }}</p>
-            <p><strong>Registernummer:</strong> {{ $tenant->register_number }}</p>
+            {{-- Informationen --}}
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <dt class="text-sm font-semibold text-gray-600">📛 Vereinsname</dt>
+                    <dd class="text-lg">{{ $tenant->name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-semibold text-gray-600">🔗 Slug</dt>
+                    <dd class="text-lg">{{ $tenant->slug }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-semibold text-gray-600">📧 E-Mail</dt>
+                    <dd class="text-lg">
+                        <a href="mailto:{{ $tenant->email }}" class="hover:underline text-[#2954A3]">
+                            {{ $tenant->email }}
+                        </a>
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-semibold text-gray-600">📞 Telefon</dt>
+                    <dd class="text-lg">
+                        <a href="tel:{{ $tenant->phone }}" class="hover:underline text-[#2954A3]">
+                            {{ $tenant->phone }}
+                        </a>
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-semibold text-gray-600">📍 Adresse</dt>
+                    <dd class="text-lg">{{ $tenant->address }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-semibold text-gray-600">🏙️ PLZ / Ort</dt>
+                    <dd class="text-lg">{{ $tenant->zip }} {{ $tenant->city }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-semibold text-gray-600">🧾 Registernummer</dt>
+                    <dd class="text-lg">{{ $tenant->register_number }}</dd>
+                </div>
+            </dl>
 
-            <div class="mt-6">
-                <a href="{{ route('tenant.edit') }}" class="text-blue-600 hover:underline">Vereinsdaten bearbeiten</a>
+            {{-- Button --}}
+            <div class="text-right pt-4">
+                <a href="{{ route('tenant.edit') }}"
+                   class="inline-block bg-[#2954A3] hover:bg-[#1E3F7F] text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all"
+                   aria-label="Vereinsdaten bearbeiten">
+                    ✏️ Vereinsdaten bearbeiten
+                </a>
             </div>
-
         </div>
     </div>
 </x-app-layout>

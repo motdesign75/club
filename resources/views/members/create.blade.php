@@ -50,6 +50,22 @@
             </div>
         </x-ui.formblock>
 
+        {{-- Block: Tags --}}
+        @if($allTags->isNotEmpty())
+        <x-ui.formblock icon="🏷️" title="Zugewiesene Tags">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                @foreach($allTags as $tag)
+                    <label class="inline-flex items-center space-x-2">
+                        <input type="checkbox" name="tags[]" value="{{ $tag->id }}"
+                               {{ in_array($tag->id, old('tags', [])) ? 'checked' : '' }}
+                               class="rounded text-indigo-600 shadow-sm border-gray-300">
+                        <span>{{ $tag->name }}</span>
+                    </label>
+                @endforeach
+            </div>
+        </x-ui.formblock>
+        @endif
+
         {{-- Block: Kommunikation --}}
         <x-ui.formblock icon="📞" title="Kommunikation">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

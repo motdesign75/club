@@ -3,114 +3,102 @@
 @section('title', 'Vereinsdaten bearbeiten')
 
 @section('content')
-    <div class="max-w-4xl mx-auto space-y-6">
-        <h1 class="text-2xl font-bold text-gray-800">✏️ Vereinsdaten bearbeiten</h1>
+<div class="max-w-5xl mx-auto space-y-10 text-gray-800 py-10">
 
-        <form method="POST" action="{{ route('tenant.update') }}" enctype="multipart/form-data" class="space-y-6 bg-white p-6 rounded shadow">
-            @csrf
-            @method('PATCH')
+    <h1 class="text-3xl font-extrabold text-[#2954A3]">
+        ✏️ Vereinsdaten bearbeiten
+    </h1>
 
-            {{-- Logo mit Vorschau --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Logo</label>
-                @if($tenant->logo)
-                    <img src="{{ Storage::url($tenant->logo) }}" alt="Vereinslogo" class="h-16 mb-2 rounded shadow">
-                @endif
-                <input type="file" name="logo" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
+    <form method="POST"
+          action="{{ route('tenant.update') }}"
+          enctype="multipart/form-data"
+          class="bg-white shadow-xl ring-1 ring-gray-200 rounded-2xl p-8 space-y-10"
+          aria-labelledby="form-vereinsdaten">
+        @csrf
+        @method('PATCH')
+
+        {{-- Logo --}}
+        <section>
+            <h2 id="form-vereinsdaten" class="text-xl font-semibold text-gray-700 mb-4">📛 Vereinslogo</h2>
+            @if($tenant->logo)
+                <div class="mb-4">
+                    <img src="{{ Storage::url($tenant->logo) }}" alt="Vereinslogo" class="h-24 rounded shadow inline-block">
+                </div>
+            @endif
+            <input type="file" name="logo" accept="image/*"
+                   class="file:rounded file:border file:bg-indigo-50 file:text-indigo-700 file:px-4 file:py-2 w-full border border-gray-300 rounded-lg shadow-sm">
+        </section>
+
+        {{-- Stammdaten --}}
+        <section>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">🏢 Stammdaten</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <x-ui.input name="name" label="Name *" :value="old('name', $tenant->name)" required />
+                <x-ui.input name="slug" label="Slug" :value="old('slug', $tenant->slug)" help="Eindeutiger Bezeichner (z. B. für URLs)" />
+                <x-ui.input name="email" label="E-Mail *" type="email" :value="old('email', $tenant->email)" required />
+                <x-ui.input name="phone" label="Telefon" :value="old('phone', $tenant->phone)" />
+                <x-ui.input name="register_number" label="Registernummer" :value="old('register_number', $tenant->register_number)" />
+                <x-ui.input name="chairman_name" label="Vorsitzender / Vorsitzende" :value="old('chairman_name', $tenant->chairman_name)" />
             </div>
+        </section>
 
-            {{-- Vereinsname --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                <input type="text" name="name" value="{{ old('name', $tenant->name) }}" required class="mt-1 block w-full border-gray-300 rounded shadow-sm">
+        {{-- Adresse --}}
+        <section>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">📍 Adresse</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <x-ui.input name="address" label="Straße / Adresse" :value="old('address', $tenant->address)" />
+                <x-ui.input name="zip" label="PLZ" :value="old('zip', $tenant->zip)" />
+                <x-ui.input name="city" label="Ort" :value="old('city', $tenant->city)" />
             </div>
+        </section>
 
-            {{-- Slug --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                <input type="text" name="slug" value="{{ old('slug', $tenant->slug) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                <p class="text-xs text-gray-500 mt-1">Der Slug identifiziert den Verein eindeutig (z. B. für URLs).</p>
+        {{-- Bankdaten --}}
+        <section>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">🏦 Bankverbindung</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <x-ui.input name="iban" label="IBAN" :value="old('iban', $tenant->iban)" />
+                <x-ui.input name="bic" label="BIC" :value="old('bic', $tenant->bic)" />
+                <x-ui.input name="bank_name" label="Bankname" :value="old('bank_name', $tenant->bank_name)" />
             </div>
+        </section>
 
-            {{-- Adresse & Kontakt --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
-                    <input type="text" name="address" value="{{ old('address', $tenant->address) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
+        {{-- Briefbogen Upload --}}
+        <section>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">📄 Briefbogen (PDF oder Bild)</h2>
+            @if($tenant->pdf_template)
+                @php
+                    $ext = strtolower(pathinfo($tenant->pdf_template, PATHINFO_EXTENSION));
+                @endphp
+                <div class="mb-4">
+                    <label class="text-sm text-gray-600 block mb-1">Aktuell:</label>
+                    @if(in_array($ext, ['jpg', 'jpeg', 'png']))
+                        <img src="{{ Storage::url($tenant->pdf_template) }}" alt="Briefbogen" class="max-h-40 object-contain border rounded shadow">
+                    @else
+                        <a href="{{ Storage::url($tenant->pdf_template) }}" target="_blank" class="text-[#2954A3] hover:underline">
+                            {{ basename($tenant->pdf_template) }} anzeigen
+                        </a>
+                    @endif
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">PLZ</label>
-                    <input type="text" name="zip" value="{{ old('zip', $tenant->zip) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ort</label>
-                    <input type="text" name="city" value="{{ old('city', $tenant->city) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
-                    <input type="text" name="phone" value="{{ old('phone', $tenant->phone) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">E-Mail *</label>
-                    <input type="email" name="email" required value="{{ old('email', $tenant->email) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Registernummer</label>
-                    <input type="text" name="register_number" value="{{ old('register_number', $tenant->register_number) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
+            @endif
+            <input type="file" name="pdf_template" accept="application/pdf,image/jpeg,image/png"
+                   class="file:rounded file:border file:bg-pink-50 file:text-pink-700 file:px-4 file:py-2 w-full border border-gray-300 rounded-lg shadow-sm mt-2">
+            <div class="mt-4">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" name="use_letterhead" value="1"
+                           {{ old('use_letterhead', $tenant->use_letterhead) ? 'checked' : '' }}
+                           class="rounded border-gray-300">
+                    <span class="ml-2 text-sm text-gray-700">Briefbogen in PDFs als Hintergrund verwenden</span>
+                </label>
             </div>
+        </section>
 
-            {{-- Bankdaten --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">IBAN</label>
-                    <input type="text" name="iban" value="{{ old('iban', $tenant->iban) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">BIC</label>
-                    <input type="text" name="bic" value="{{ old('bic', $tenant->bic) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Bankname</label>
-                    <input type="text" name="bank_name" value="{{ old('bank_name', $tenant->bank_name) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Vorsitzender</label>
-                    <input type="text" name="chairman_name" value="{{ old('chairman_name', $tenant->chairman_name) }}" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-                </div>
-            </div>
-
-            {{-- PDF-Briefbogen Upload --}}
-            <div class="pt-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Briefbogen (PDF-Hintergrund)</label>
-                @if($tenant->pdf_template)
-                    <p class="text-sm text-gray-600 mb-2">Aktuell: {{ basename($tenant->pdf_template) }}</p>
-                @endif
-                <input type="file" name="pdf_template" accept="application/pdf" class="mt-1 block w-full border-gray-300 rounded shadow-sm">
-            </div>
-
-            {{-- Briefbogen verwenden --}}
-<div>
-    <label class="inline-flex items-center">
-        <input type="checkbox" name="use_letterhead" value="1" {{ old('use_letterhead', $tenant->use_letterhead) ? 'checked' : '' }} class="rounded border-gray-300">
-        <span class="ml-2 text-sm text-gray-700">Briefbogen als Hintergrund in PDF verwenden</span>
-    </label>
+        {{-- Speichern --}}
+        <div class="text-right pt-4">
+            <button type="submit"
+                    class="bg-[#2954A3] hover:bg-[#1E3F7F] text-white font-semibold px-8 py-3 rounded-xl shadow-md transition duration-200">
+                💾 Speichern
+            </button>
+        </div>
+    </form>
 </div>
-
-            {{-- Speichern --}}
-            <div class="pt-4">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow">
-                    💾 Speichern
-                </button>
-            </div>
-        </form>
-    </div>
 @endsection

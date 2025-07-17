@@ -42,7 +42,7 @@ class TenantController extends Controller
             'bic' => 'nullable|string|max:255',
             'bank_name' => 'nullable|string|max:255',
             'chairman_name' => 'nullable|string|max:255',
-            'pdf_template' => 'nullable|mimes:pdf|max:2048',
+            'pdf_template' => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048',
             'use_letterhead' => 'nullable|boolean',
         ]);
 

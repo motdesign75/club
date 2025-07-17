@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Member;
 use Illuminate\Http\Request;
-use PDF; // ← Korrekte Verwendung für niklasravnsborg/laravel-pdf
+use PDF;
 
 class InvoiceController extends Controller
 {
-    // Liste der Rechnungen
+    // Liste aller Rechnungen
     public function index()
     {
         $invoices = Invoice::where('tenant_id', auth()->user()->tenant_id)
@@ -30,58 +31,81 @@ class InvoiceController extends Controller
         return view('invoices.create', compact('members'));
     }
 
-    // Rechnung speichern und PDF direkt anzeigen
+    // Rechnung speichern und PDF generieren
     public function store(Request $request)
     {
         $request->validate([
-            'member_id' => 'required|exists:members,id',
-            'invoice_date' => 'required|date',
-            'amount' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
+            'member_id'             => 'required|exists:members,id',
+            'invoice_date'          => 'required|date',
+            'items'                 => 'required|array|min:1',
+            'items.*.description'   => 'required|string|max:255',
+            'items.*.quantity'      => 'required|numeric|min:0',
+            'items.*.unit'          => 'nullable|string|max:50',
+            'items.*.unit_price'    => 'required|numeric|min:0',
+            'discount'              => 'nullable|numeric|min:0|max:100',
+            'tax_rate'              => 'nullable|numeric|min:0|max:100',
         ]);
 
         $invoiceNumber = Invoice::generateInvoiceNumber();
 
         $invoice = Invoice::create([
-            'tenant_id' => auth()->user()->tenant_id,
-            'member_id' => $request->member_id,
+            'tenant_id'      => auth()->user()->tenant_id,
+            'member_id'      => $request->member_id,
             'invoice_number' => $invoiceNumber,
-            'invoice_date' => $request->invoice_date,
-            'amount' => $request->amount,
-            'description' => $request->description,
-            'status' => 'entwurf',
+            'invoice_date'   => $request->invoice_date,
+            'discount'       => $request->discount ?? 0,
+            'tax_rate'       => $request->tax_rate ?? 0,
+            'status'         => 'entwurf',
         ]);
 
-        $tenant = auth()->user()->tenant;
-        $member = $invoice->member;
+        // Positionen speichern
+        foreach ($request->items as $item) {
+            InvoiceItem::create([
+                'invoice_id'  => $invoice->id,
+                'description' => $item['description'],
+                'quantity'    => $item['quantity'],
+                'unit'        => $item['unit'] ?? 'Stück',
+                'unit_price'  => $item['unit_price'],
+            ]);
+        }
 
-        $pdf = PDF::loadView('invoices.pdf', compact('invoice', 'tenant', 'member'));
+        // PDF erzeugen
+        $invoice->load(['member', 'items']);
+        $tenant = auth()->user()->tenant;
+
+        $pdf = PDF::loadView('invoices.pdf', [
+            'invoice' => $invoice,
+            'tenant'  => $tenant,
+            'member'  => $invoice->member,
+        ]);
 
         return $pdf->stream('Rechnung_' . $invoice->invoice_number . '.pdf');
     }
 
-    // Einzelansicht der Rechnung anzeigen
+    // Einzelansicht der Rechnung
     public function show(Invoice $invoice)
     {
         $this->authorizeAccess($invoice);
-
         return view('invoices.show', compact('invoice'));
     }
 
-    // PDF-Vorschau manuell abrufen
+    // PDF-Vorschau anzeigen
     public function pdf(Invoice $invoice)
     {
         $this->authorizeAccess($invoice);
-
-        $member = $invoice->member;
+        $invoice->load(['member', 'items']);
         $tenant = auth()->user()->tenant;
 
-        $pdf = PDF::loadView('invoices.pdf', compact('invoice', 'member', 'tenant'));
+        $pdf = PDF::loadView('invoices.pdf', [
+            'invoice' => $invoice,
+            'tenant'  => $tenant,
+            'member'  => $invoice->member,
+        ]);
 
         return $pdf->stream('Rechnung_' . $invoice->invoice_number . '.pdf');
     }
 
-    // Zugriffsschutz auf eigene Rechnungen
+    // Zugriff auf eigene Rechnungen beschränken
     private function authorizeAccess(Invoice $invoice)
     {
         abort_if($invoice->tenant_id !== auth()->user()->tenant_id, 403);

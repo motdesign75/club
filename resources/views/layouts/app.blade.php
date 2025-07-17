@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ open: false }" class="h-full bg-gray-100">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" x-data="{ open: false }" x-cloak class="h-full bg-gray-100">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', config('app.name', 'Clubano'))</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    @livewireStyles
     @stack('head')
 </head>
 <body class="h-full antialiased font-sans text-gray-800">
@@ -22,7 +25,7 @@
         </button>
     </header>
 
-    <!-- Mobile Sidebar --> kanaller
+    <!-- Mobile Sidebar -->
     <div x-show="open"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 transform -translate-x-full"
@@ -31,7 +34,7 @@
          x-transition:leave-start="opacity-100 transform translate-x-0"
          x-transition:leave-end="opacity-0 transform -translate-x-full"
          class="sm:hidden fixed top-0 left-0 z-50 w-64 h-full bg-white shadow-lg overflow-y-auto"
-         style="display: none;">
+         x-cloak>
         <div class="relative h-full">
             <button @click="open = false" class="absolute top-3 right-3 text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
@@ -45,11 +48,11 @@
         </div>
     </div>
 
-    <!-- Overlay -->
+    <!-- Overlay bei mobilem Menü -->
     <div x-show="open"
          x-transition.opacity
          class="sm:hidden fixed inset-0 bg-black bg-opacity-25 z-40"
-         style="display: none;"
+         x-cloak
          @click="open = false">
     </div>
 
@@ -67,6 +70,7 @@
         </main>
     </div>
 
+    @livewireScripts
     @stack('scripts')
 </body>
 </html>

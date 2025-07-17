@@ -13,7 +13,7 @@
         </a>
     </div>
 
-    <!-- Tabs für Statusfilter -->
+    <!-- Status-Tabs -->
     <div class="mt-6 border-b border-gray-200">
         <nav class="-mb-px flex space-x-6 overflow-x-auto">
             @php
@@ -34,87 +34,124 @@
         </nav>
     </div>
 
-    <!-- Suchleiste -->
+    <!-- Tag-Filter -->
+    @if($allTags->isNotEmpty())
     <form method="GET" action="{{ route('members.index') }}" class="mt-4">
+        <select name="tag" onchange="this.form.submit()"
+                class="px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-[#2954A3] focus:outline-none">
+            <option value="">🔖 Alle Tags</option>
+            @foreach($allTags as $tag)
+                <option value="{{ $tag->id }}" {{ request('tag') == $tag->id ? 'selected' : '' }}>
+                    {{ $tag->name }}
+                </option>
+            @endforeach
+        </select>
+        <input type="hidden" name="status" value="{{ request('status') }}">
+        <input type="hidden" name="search" value="{{ request('search') }}">
+    </form>
+    @endif
+
+    <!-- Suchleiste -->
+    <form method="GET" action="{{ route('members.index') }}" class="mt-2">
         <input type="text" name="search" value="{{ request('search') }}"
                placeholder="Mitglied suchen..."
                class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-[#2954A3] focus:outline-none">
         <input type="hidden" name="status" value="{{ request('status') }}">
+        <input type="hidden" name="tag" value="{{ request('tag') }}">
     </form>
 
-    <!-- Tabelle -->
     @if($members->isEmpty())
         <p class="text-gray-500 mt-6">Keine Mitglieder gefunden.</p>
     @else
-        <div class="overflow-auto bg-white rounded-2xl shadow mt-6 ring-1 ring-gray-200">
-            <table class="min-w-full text-[15px] md:text-sm text-left">
-                <thead class="bg-[#F5F8FF] text-xs font-semibold text-gray-700 uppercase">
-                    <tr>
-                        <th class="px-4 py-3">Foto</th>
-                        <th class="px-4 py-3">Anrede</th>
-                        <th class="px-4 py-3">Vorname</th>
-                        <th class="px-4 py-3">Nachname</th>
-                        <th class="px-4 py-3 hidden md:table-cell">E-Mail</th>
-                        <th class="px-4 py-3 hidden md:table-cell">Mobil</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-right">Aktion</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($members as $member)
-                        <tr class="{{ $loop->even ? 'bg-[#FAFBFF]' : 'bg-white' }} hover:bg-[#EFF4FF] transition duration-150">
-                            <td class="px-4 py-3">
-                                @if($member->photo)
-                                    <img src="{{ asset('storage/' . $member->photo) }}"
-                                         alt="Profilfoto von {{ $member->first_name }}"
-                                         class="w-10 h-10 rounded-full object-cover shadow-sm">
-                                @else
-                                    <span class="text-gray-400 italic">Kein Bild</span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3">{{ $member->salutation }}</td>
-                            <td class="px-4 py-3 font-semibold text-[#2954A3]">
-                                <a href="{{ route('members.show', $member) }}"
-                                   class="hover:underline">{{ $member->first_name }}</a>
-                            </td>
-                            <td class="px-4 py-3">{{ $member->last_name }}</td>
-                            <td class="px-4 py-3 hidden md:table-cell">{{ $member->email ?? '—' }}</td>
-                            <td class="px-4 py-3 hidden md:table-cell">{{ $member->mobile ?? '—' }}</td>
-                            <td class="px-4 py-3">
-                                <span class="inline-block px-2 py-1 rounded text-xs font-medium
-                                    @if ($member->status === 'aktiv') bg-green-100 text-green-800
-                                    @elseif ($member->status === 'ehemalig') bg-gray-200 text-gray-800
-                                    @else bg-blue-100 text-blue-800 @endif">
-                                    {{ ucfirst($member->status) }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 text-right">
-                                <div class="flex justify-end items-center gap-3">
-                                    <a href="{{ route('members.show', $member) }}" title="Anzeigen"
-                                       class="text-blue-600 hover:text-blue-800 transition">
-                                        🔍
-                                    </a>
-                                    <a href="{{ route('members.edit', $member) }}" title="Bearbeiten"
-                                       class="text-yellow-500 hover:text-yellow-600 transition">
-                                        ✏️
-                                    </a>
-                                    <a href="{{ route('members.pdf', $member) }}" title="Datenauskunft erstellen"
-                                       target="_blank" rel="noopener noreferrer"
-                                       class="text-indigo-600 hover:text-indigo-800 transition">
-                                        📄
-                                    </a>
-                                </div>
-                            </td>
+        <!-- Massenverarbeitung Formular -->
+        <form method="POST" action="{{ route('members.bulk-action') }}">
+            @csrf
+
+            <div class="mt-4 mb-2 flex items-center gap-4">
+                <select name="action" required class="rounded border-gray-300 px-3 py-2">
+                    <option value="">Aktion wählen</option>
+                    <option value="set_status_aktiv">Status: Aktiv</option>
+                    <option value="set_status_passiv">Status: Passiv</option>
+                    <option value="set_status_ehemalig">Status: Ehemalig</option>
+                    <option value="delete">Löschen</option>
+                </select>
+
+                <x-primary-button>Ausführen</x-primary-button>
+            </div>
+
+            <!-- Tabelle -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white shadow-sm rounded-xl overflow-hidden">
+                    <thead class="bg-gray-100 text-gray-600 text-left text-sm uppercase">
+                        <tr>
+                            <th class="px-6 py-3"><input type="checkbox" id="checkAll"></th>
+                            <th class="px-6 py-3">Name</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Tags</th>
+                            <th class="px-6 py-3 text-right">Aktionen</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        @foreach($members as $member)
+                            <tr class="border-b">
+                                <td class="px-6 py-4">
+                                    <input type="checkbox" name="member_ids[]" value="{{ $member->id }}" class="member-checkbox">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <a href="{{ route('members.show', $member) }}" class="font-medium text-[#2954A3] hover:underline">
+                                        {{ $member->fullname }}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @php
+                                        $statusColor = match($member->status){
+                                            'aktiv' => 'green',
+                                            'ehemalig' => 'gray',
+                                            'zukünftig' => 'blue',
+                                            default => 'yellow'
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded bg-{{ $statusColor }}-100 text-{{ $statusColor }}-800">
+                                        {{ ucfirst($member->status) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @foreach($member->tags as $tag)
+                                        <span class="inline-block text-white text-xs px-2 py-1 rounded mr-1 mb-1"
+                                              style="background-color: {{ $tag->color ?? '#6b7280' }}">
+                                            {{ $tag->name }}
+                                        </span>
+                                    @endforeach
+                                </td>
+                                <td class="px-6 py-4 text-right space-x-2">
+                                    <a href="{{ route('members.edit', $member) }}" class="text-sm text-blue-600 hover:underline">Bearbeiten</a>
+                                    <form action="{{ route('members.destroy', $member) }}" method="POST" class="inline-block" onsubmit="return confirm('Wirklich löschen?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-sm text-red-600 hover:underline">Löschen</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </form>
 
         <!-- Pagination -->
-        <div class="mt-6">
+        <div class="mt-4">
             {{ $members->appends(request()->query())->links() }}
         </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    document.getElementById('checkAll').addEventListener('change', function () {
+        document.querySelectorAll('.member-checkbox').forEach(cb => {
+            cb.checked = this.checked;
+        });
+    });
+</script>
+@endpush
 @endsection

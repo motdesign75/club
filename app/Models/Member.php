@@ -128,4 +128,12 @@ class Member extends Model
 
         return 'zukünftig';
     }
+
+    /**
+     * Tags eines Mitglieds (z. B. Eltern, Vorstand, Jugendgruppe etc.)
+     */
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
 }

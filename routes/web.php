@@ -17,6 +17,7 @@ use App\Http\Controllers\InvoiceNumberRangeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PdfTestController;
 use App\Http\Controllers\LicenseController;
+use App\Http\Controllers\TagController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -37,6 +38,7 @@ Route::middleware('auth')->group(function () {
 
     // Mitglieder
     Route::resource('members', MemberController::class);
+    Route::post('/members/bulk-action', [MemberController::class, 'bulkAction'])->name('members.bulk-action'); // ✅ NEU
     Route::get('/members/{member}/datenauskunft', [MemberController::class, 'exportDatenauskunft'])->name('members.datenauskunft');
     Route::get('/members/{member}/pdf', [MemberController::class, 'exportDatenauskunft'])->name('members.pdf');
 
@@ -47,6 +49,9 @@ Route::middleware('auth')->group(function () {
 
     // Mitgliedschaften
     Route::resource('memberships', MembershipController::class)->except(['show']);
+
+    // Tags verwalten
+    Route::resource('tags', TagController::class)->except(['show']);
 
     // Nummernkreise für Rechnungen
     Route::resource('number-ranges', InvoiceNumberRangeController::class)->names('number_ranges');
@@ -62,6 +67,7 @@ Route::middleware('auth')->group(function () {
 
     // Veranstaltungen
     Route::resource('events', EventController::class)->except(['show']);
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
 
     // Rollen
     Route::get('/einstellungen/rollen', [RoleController::class, 'edit'])->name('roles.edit');

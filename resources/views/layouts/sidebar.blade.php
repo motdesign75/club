@@ -90,6 +90,11 @@
             </a>
         </li>
         <li>
+            <a href="{{ route('tags.index') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('tags.*') ? 'bg-indigo-100 font-bold' : '' }}">
+                🏷️ Tags verwalten
+            </a>
+        </li>
+        <li>
             <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded hover:bg-indigo-100 {{ request()->routeIs('profile.edit') ? 'bg-indigo-100 font-bold' : '' }}">
                 🙍 Profil
             </a>

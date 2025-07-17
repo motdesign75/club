@@ -3,56 +3,132 @@
 @section('title', 'Vereinsprofil')
 
 @section('content')
-    <div class="max-w-4xl mx-auto space-y-6">
-        <h1 class="text-2xl font-bold text-gray-800">🏢 Vereinsprofil</h1>
+<div class="max-w-4xl mx-auto space-y-10 text-gray-800 py-10">
 
-        <div class="bg-white p-6 rounded shadow space-y-4">
-            <p><strong>Name:</strong> {{ $tenant->name }}</p>
-            <p><strong>E-Mail:</strong> {{ $tenant->email }}</p>
-            <p><strong>Adresse:</strong> {{ $tenant->address }}, {{ $tenant->zip }} {{ $tenant->city }}</p>
-            <p><strong>Telefon:</strong> {{ $tenant->phone }}</p>
-            <p><strong>Registernummer:</strong> {{ $tenant->register_number }}</p>
+    <h1 class="text-3xl font-extrabold text-[#2954A3]">
+        🏢 Vereinsprofil
+    </h1>
 
-            {{-- Neue Bankdaten --}}
-            @if($tenant->iban)
-                <p><strong>IBAN:</strong> {{ $tenant->iban }}</p>
-            @endif
+    <div class="bg-white rounded-2xl shadow-xl p-8 ring-1 ring-gray-200 space-y-6">
 
-            @if($tenant->bic)
-                <p><strong>BIC:</strong> {{ $tenant->bic }}</p>
-            @endif
+        {{-- Logo --}}
+        @if ($tenant->logo)
+            <div class="flex justify-center">
+                <img src="{{ asset('storage/' . $tenant->logo) }}"
+                     alt="Logo des Vereins {{ $tenant->name }}"
+                     class="h-28 object-contain rounded shadow">
+            </div>
+        @endif
 
-            @if($tenant->bank_name)
-                <p><strong>Bankname:</strong> {{ $tenant->bank_name }}</p>
-            @endif
-
+        {{-- Stammdaten --}}
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <dt class="text-sm font-semibold text-gray-600">📛 Name</dt>
+                <dd class="text-base">{{ $tenant->name }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-semibold text-gray-600">📧 E-Mail</dt>
+                <dd class="text-base">
+                    <a href="mailto:{{ $tenant->email }}" class="text-[#2954A3] hover:underline">
+                        {{ $tenant->email }}
+                    </a>
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-semibold text-gray-600">📍 Adresse</dt>
+                <dd class="text-base">{{ $tenant->address }}, {{ $tenant->zip }} {{ $tenant->city }}</dd>
+            </div>
+            <div>
+                <dt class="text-sm font-semibold text-gray-600">📞 Telefon</dt>
+                <dd class="text-base">
+                    <a href="tel:{{ $tenant->phone }}" class="text-[#2954A3] hover:underline">
+                        {{ $tenant->phone }}
+                    </a>
+                </dd>
+            </div>
+            <div>
+                <dt class="text-sm font-semibold text-gray-600">🧾 Registernummer</dt>
+                <dd class="text-base">{{ $tenant->register_number }}</dd>
+            </div>
             @if($tenant->chairman_name)
-                <p><strong>Vorsitzende/r:</strong> {{ $tenant->chairman_name }}</p>
-            @endif
-
-            {{-- Logo --}}
-            @if ($tenant->logo)
                 <div>
-                    <strong>Logo:</strong><br>
-                    <img src="{{ Storage::url($tenant->logo) }}" alt="Vereinslogo" class="h-24 rounded shadow mt-2">
+                    <dt class="text-sm font-semibold text-gray-600">👤 Vorsitzende/r</dt>
+                    <dd class="text-base">{{ $tenant->chairman_name }}</dd>
                 </div>
             @endif
+        </dl>
 
-            {{-- Briefbogen --}}
-            @if ($tenant->pdf_template)
-                <p>
-                    <strong>Briefbogen (PDF):</strong>
-                    <a href="{{ Storage::url($tenant->pdf_template) }}" target="_blank" class="text-blue-600 hover:underline ml-2">
-                        📄 Anzeigen / Download
-                    </a>
-                </p>
-            @endif
+        {{-- Bankdaten --}}
+        @if($tenant->iban || $tenant->bic || $tenant->bank_name)
+        <div class="pt-4">
+            <h2 class="text-xl font-semibold text-indigo-700 mb-4">🏦 Bankverbindung</h2>
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @if($tenant->iban)
+                    <div>
+                        <dt class="text-sm font-semibold text-gray-600">IBAN</dt>
+                        <dd class="text-base">{{ $tenant->iban }}</dd>
+                    </div>
+                @endif
+                @if($tenant->bic)
+                    <div>
+                        <dt class="text-sm font-semibold text-gray-600">BIC</dt>
+                        <dd class="text-base">{{ $tenant->bic }}</dd>
+                    </div>
+                @endif
+                @if($tenant->bank_name)
+                    <div>
+                        <dt class="text-sm font-semibold text-gray-600">Bankname</dt>
+                        <dd class="text-base">{{ $tenant->bank_name }}</dd>
+                    </div>
+                @endif
+            </dl>
+        </div>
+        @endif
+
+        {{-- Briefbogen --}}
+        @if ($tenant->pdf_template)
+            @php
+                $ext = strtolower(pathinfo($tenant->pdf_template, PATHINFO_EXTENSION));
+            @endphp
+
+            <div class="pt-4">
+                <dt class="text-sm font-semibold text-gray-600">📄 Briefbogen</dt>
+                <dd class="mt-2">
+                    @if(in_array($ext, ['jpg', 'jpeg', 'png']))
+                        <img src="{{ asset('storage/' . $tenant->pdf_template) }}"
+                             alt="Briefbogen"
+                             class="w-full max-h-64 object-contain border border-gray-300 shadow rounded">
+                    @else
+                        <a href="{{ asset('storage/' . $tenant->pdf_template) }}"
+                           target="_blank"
+                           class="text-[#2954A3] hover:underline">
+                            PDF anzeigen / herunterladen
+                        </a>
+                    @endif
+                </dd>
+            </div>
+        @endif
+
+        {{-- Briefbogen-Schalter --}}
+        <div>
+            <dt class="text-sm font-semibold text-gray-600">📝 Briefbogen verwenden</dt>
+            <dd class="text-base">
+                @if($tenant->use_letterhead)
+                    ✅ Ja
+                @else
+                    ❌ Nein
+                @endif
+            </dd>
         </div>
 
-        <div class="text-right">
-            <a href="{{ route('tenant.edit') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        {{-- Bearbeiten-Button --}}
+        <div class="text-right pt-6">
+            <a href="{{ route('tenant.edit') }}"
+               class="bg-[#2954A3] hover:bg-[#1E3F7F] text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all"
+               aria-label="Vereinsdaten bearbeiten">
                 ✏️ Bearbeiten
             </a>
         </div>
     </div>
+</div>
 @endsection
