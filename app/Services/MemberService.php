@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class MemberService
 {
-    public function create(StoreMemberRequest $request): void
+    public function create(StoreMemberRequest $request): Member
     {
         $data = $request->validated();
 
@@ -33,7 +33,8 @@ class MemberService
             }
         }
 
-        Member::create($data);
+        // Mitglied anlegen und zurückgeben
+        return Member::create($data);
     }
 
     public function update(UpdateMemberRequest $request, Member $member): void

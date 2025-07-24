@@ -3,12 +3,10 @@
 @section('title', 'Protokoll bearbeiten')
 
 @push('head')
-    {{-- Trix Editor Styles – jsDelivr (funktionierende Quelle) --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/trix@2.0.0/dist/trix.css">
 @endpush
 
 @push('scripts')
-    {{-- Trix Editor Script – jsDelivr --}}
     <script src="https://cdn.jsdelivr.net/npm/trix@2.0.0/dist/trix.umd.min.js"></script>
 @endpush
 
@@ -48,18 +46,19 @@
             @enderror
         </div>
 
-        {{-- Teilnehmer --}}
+        {{-- Teilnehmer (Checkbox-Grid) --}}
         <div class="mb-6">
-            <label for="participant_ids" class="block text-sm font-medium text-gray-700">Teilnehmer</label>
-            <select id="participant_ids" name="participant_ids[]" multiple
-                    class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Teilnehmer</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach ($members as $member)
-                    <option value="{{ $member->id }}"
-                        {{ in_array($member->id, old('participant_ids', $protocol->participants->pluck('id')->toArray())) ? 'selected' : '' }}>
-                        {{ $member->full_name }}
-                    </option>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="participant_ids[]" value="{{ $member->id }}"
+                               {{ in_array($member->id, old('participant_ids', $selected)) ? 'checked' : '' }}
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring focus:ring-blue-200">
+                        <span>{{ $member->full_name }}</span>
+                    </label>
                 @endforeach
-            </select>
+            </div>
             @error('participant_ids')
                 <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
             @enderror

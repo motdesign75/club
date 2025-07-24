@@ -34,7 +34,6 @@
 
     {{-- Sektionen als Grid --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {{-- Sektionen dynamisch --}}
         @foreach([
             '🧍 Mitglied' => [
                 ['label' => 'Geschlecht', 'value' => $member->gender],
@@ -43,14 +42,14 @@
                 ['label' => 'Vorname', 'value' => $member->first_name],
                 ['label' => 'Nachname', 'value' => $member->last_name],
                 ['label' => 'Organisation', 'value' => $member->organization],
-                ['label' => 'Geburtstag', 'value' => $member->birthday],
+                ['label' => 'Geburtstag', 'value' => $member->birthday ? \Carbon\Carbon::parse($member->birthday)->format('d.m.Y') : '–'],
             ],
             '📝 Mitgliedschaft' => [
                 ['label' => 'Mitgliedschaft', 'value' => $member->membership ? $member->membership->name . ' – ' . number_format($member->membership->fee, 2, ',', '.') . ' € / ' . $member->membership->billing_cycle : '–'],
                 ['label' => 'Mitgliedsnummer', 'value' => $member->member_id],
-                ['label' => 'Eintritt', 'value' => $member->entry_date],
-                ['label' => 'Austritt', 'value' => $member->exit_date],
-                ['label' => 'Kündigungsdatum', 'value' => $member->termination_date],
+                ['label' => 'Eintritt', 'value' => $member->entry_date ? \Carbon\Carbon::parse($member->entry_date)->format('d.m.Y') : '–'],
+                ['label' => 'Austritt', 'value' => $member->exit_date ? \Carbon\Carbon::parse($member->exit_date)->format('d.m.Y') : '–'],
+                ['label' => 'Kündigungsdatum', 'value' => $member->termination_date ? \Carbon\Carbon::parse($member->termination_date)->format('d.m.Y') : '–'],
             ],
             '📞 Kommunikation' => [
                 ['label' => 'Mobil', 'value' => $member->mobile, 'link' => 'tel:' . $member->mobile],
@@ -66,23 +65,23 @@
                 ['label' => 'C/O', 'value' => $member->care_of],
             ]
         ] as $heading => $fields)
-        <div class="bg-white rounded-2xl shadow-md p-5 space-y-4 ring-2 ring-gray-100">
-            <h2 class="text-lg font-semibold text-[#2954A3]">{{ $heading }}</h2>
-            <div class="space-y-2 text-sm">
-                @foreach($fields as $field)
-                    <div class="flex justify-between items-center border-b pb-1">
-                        <span class="text-gray-600">{{ $field['label'] }}</span>
-                        <span class="text-right text-gray-900">
-                            @if(!empty($field['link']) && !empty($field['value']))
-                                <a href="{{ $field['link'] }}" class="text-blue-600 underline hover:text-blue-800">{{ $field['value'] }}</a>
-                            @else
-                                {{ $field['value'] ?? '–' }}
-                            @endif
-                        </span>
-                    </div>
-                @endforeach
+            <div class="bg-white rounded-2xl shadow-md p-5 space-y-4 ring-2 ring-gray-100">
+                <h2 class="text-lg font-semibold text-[#2954A3]">{{ $heading }}</h2>
+                <div class="space-y-2 text-sm">
+                    @foreach($fields as $field)
+                        <div class="flex justify-between items-center border-b pb-1">
+                            <span class="text-gray-600">{{ $field['label'] }}</span>
+                            <span class="text-right text-gray-900">
+                                @if(!empty($field['link']) && !empty($field['value']))
+                                    <a href="{{ $field['link'] }}" class="text-blue-600 underline hover:text-blue-800">{{ $field['value'] }}</a>
+                                @else
+                                    {{ $field['value'] ?? '–' }}
+                                @endif
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        </div>
         @endforeach
     </div>
 

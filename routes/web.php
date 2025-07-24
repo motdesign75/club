@@ -18,6 +18,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PdfTestController;
 use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\Settings\EmailSettingsController;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -38,7 +39,7 @@ Route::middleware('auth')->group(function () {
 
     // Mitglieder
     Route::resource('members', MemberController::class);
-    Route::post('/members/bulk-action', [MemberController::class, 'bulkAction'])->name('members.bulk-action'); // ✅ NEU
+    Route::post('/members/bulk-action', [MemberController::class, 'bulkAction'])->name('members.bulk-action');
     Route::get('/members/{member}/datenauskunft', [MemberController::class, 'exportDatenauskunft'])->name('members.datenauskunft');
     Route::get('/members/{member}/pdf', [MemberController::class, 'exportDatenauskunft'])->name('members.pdf');
 
@@ -53,10 +54,10 @@ Route::middleware('auth')->group(function () {
     // Tags verwalten
     Route::resource('tags', TagController::class)->except(['show']);
 
-    // Nummernkreise für Rechnungen
+    // Nummernkreise
     Route::resource('number-ranges', InvoiceNumberRangeController::class)->names('number_ranges');
 
-    // Beitragsrechnungen (inkl. Detailansicht)
+    // Beitragsrechnungen
     Route::resource('invoices', InvoiceController::class)->only(['index', 'create', 'store', 'show']);
     Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
 
@@ -83,7 +84,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{customMemberField}', [CustomMemberFieldController::class, 'destroy'])->name('destroy');
     });
 
-    // Finanzen – Konten & Buchungen
+    // Finanzen
     Route::resource('accounts', AccountController::class)->except(['show']);
     Route::resource('transactions', TransactionController::class)->except(['show', 'edit', 'update']);
     Route::get('/transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
@@ -101,12 +102,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/protokolle/{protocol}/bearbeiten', [ProtocolController::class, 'edit'])->name('protocols.edit');
     Route::put('/protokolle/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
 
+    // Protokoll-Mail Vorschau + Versand
+    Route::get('/protokolle/{protocol}/mail', [ProtocolController::class, 'mailForm'])->name('protocols.mail.form');
+    Route::post('/protokolle/{protocol}/mail', [ProtocolController::class, 'sendMail'])->name('protocols.mail.send');
+
     // Test-PDF
     Route::get('/pdf-test', [PdfTestController::class, 'test'])->name('pdf.test');
 
-    // Stripe Lizenz-Upgrade
+    // Stripe Lizenz
     Route::get('/license/upgrade', [LicenseController::class, 'upgrade'])->name('license.upgrade');
     Route::post('/license/checkout', [LicenseController::class, 'checkout'])->name('license.checkout');
+
+    // SMTP-Einstellungen
+    Route::get('/settings/email', [EmailSettingsController::class, 'edit'])->name('settings.email.edit');
+    Route::put('/settings/email', [EmailSettingsController::class, 'update'])->name('settings.email.update');
 
     // Debug
     Route::get('/envcheck', function () {

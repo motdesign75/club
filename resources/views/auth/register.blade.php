@@ -14,7 +14,7 @@
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
             </div>
 
-            <!-- Email -->
+            <!-- E-Mail -->
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-700">E-Mail-Adresse</label>
                 <input id="email" name="email" type="email" required autocomplete="username"
@@ -23,14 +23,7 @@
                 <x-input-error :messages="$errors->get('email')" class="mt-2" />
             </div>
 
-            <!-- Einladungscode -->
-            <div>
-                <label for="invite_code" class="block text-sm font-medium text-gray-700">Einladungscode</label>
-                <input id="invite_code" name="invite_code" type="text" required
-                    value="{{ old('invite_code') }}"
-                    class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-[#2954A3] focus:outline-none" />
-                <x-input-error :messages="$errors->get('invite_code')" class="mt-2" />
-            </div>
+            
 
             <!-- Passwort -->
             <div>

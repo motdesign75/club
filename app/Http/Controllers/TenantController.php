@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InvitationCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -67,6 +69,14 @@ class TenantController extends Controller
 
         // Update durchführen
         $tenant->update($validated);
+
+        // Prüfen, ob bereits ein Einladungscode existiert
+        if (!$tenant->invitationCode) {
+            InvitationCode::create([
+                'tenant_id' => $tenant->id,
+                'code' => strtoupper(Str::uuid()),
+            ]);
+        }
 
         return redirect()->route('tenant.show')->with('success', 'Vereinsdaten wurden aktualisiert.');
     }

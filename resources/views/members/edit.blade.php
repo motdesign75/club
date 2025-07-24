@@ -10,12 +10,12 @@
         </h1>
     </div>
 
-    <form action="{{ route('members.update', $member) }}" method="POST" enctype="multipart/form-data" class="relative bg-white shadow-xl ring-1 ring-gray-200 rounded-3xl p-10 space-y-10 animate-fade-in">
+    <form action="{{ route('members.update', $member) }}" method="POST" enctype="multipart/form-data" class="relative bg-white shadow-2xl ring-1 ring-indigo-200 rounded-3xl p-10 space-y-10 animate-fade-in">
         @csrf
         @method('PATCH')
 
         {{-- Sektion: Mitglied --}}
-        <x-ui.formblock icon="🧍" title="Mitglied" color="indigo">
+        <x-ui.formblock icon="🧝" title="Mitglied" color="indigo">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <x-ui.select name="gender" label="Geschlecht" :options="['weiblich'=>'weiblich','männlich'=>'männlich','divers'=>'divers']" :selected="old('gender', $member->gender)" />
                 <x-ui.select name="salutation" label="Anrede" :options="['Frau'=>'Frau','Herr'=>'Herr','Liebe'=>'Liebe','Lieber'=>'Lieber','Hallo'=>'Hallo']" :selected="old('salutation', $member->salutation)" />
@@ -23,7 +23,7 @@
                 <x-ui.input name="first_name" label="Vorname" :value="old('first_name', $member->first_name)" required />
                 <x-ui.input name="last_name" label="Nachname" :value="old('last_name', $member->last_name)" required />
                 <x-ui.input name="organization" label="Firma / Organisation" :value="old('organization', $member->organization)" />
-                <x-ui.input type="date" name="birthday" label="Geburtstag" :value="old('birthday', $member->birthday)" />
+                <x-ui.input type="date" name="birthday" label="Geburtstag" :value="old('birthday', optional($member->birthday)->format('Y-m-d'))" />
 
                 <div>
                     <x-ui.label for="photo">Profilfoto</x-ui.label>
@@ -39,7 +39,7 @@
         </x-ui.formblock>
 
         {{-- Sektion: Mitgliedschaft --}}
-        <x-ui.formblock icon="📝" title="Mitgliedschaft" color="sky">
+        <x-ui.formblock icon="🗘️" title="Mitgliedschaft" color="sky">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <x-ui.label for="membership_id">Mitgliedschaft</x-ui.label>
@@ -53,9 +53,9 @@
                     </select>
                 </div>
                 <x-ui.input name="member_id" label="Mitgliedsnummer" :value="old('member_id', $member->member_id)" />
-                <x-ui.input type="date" name="entry_date" label="Eintritt" :value="old('entry_date', $member->entry_date)" />
-                <x-ui.input type="date" name="exit_date" label="Austritt" :value="old('exit_date', $member->exit_date)" />
-                <x-ui.input type="date" name="termination_date" label="Kündigungsdatum" :value="old('termination_date', $member->termination_date)" />
+                <x-ui.input type="date" name="entry_date" label="Eintritt" :value="old('entry_date', optional($member->entry_date)->format('Y-m-d'))" />
+                <x-ui.input type="date" name="exit_date" label="Austritt" :value="old('exit_date', optional($member->exit_date)->format('Y-m-d'))" />
+                <x-ui.input type="date" name="termination_date" label="Kündigungsdatum" :value="old('termination_date', optional($member->termination_date)->format('Y-m-d'))" />
             </div>
         </x-ui.formblock>
 
@@ -105,7 +105,7 @@
 
         {{-- Sektion: Benutzerdefinierte Felder --}}
         @if (isset($customFields) && count($customFields))
-        <x-ui.formblock icon="🧩" title="Weitere Angaben" color="fuchsia">
+        <x-ui.formblock icon="🧹" title="Weitere Angaben" color="fuchsia">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 @foreach ($customFields as $field)
                     @php

@@ -1,4 +1,4 @@
-<x-app-layout>
+@extends('layouts.app')
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight">
             📄 Rechnung #{{ $invoice->invoice_number }}
@@ -53,4 +53,4 @@
             </div>
         </div>
     </div>
-</x-app-layout>
+

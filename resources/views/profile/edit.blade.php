@@ -1,4 +1,4 @@
-<x-app-layout>
+@extends('layouts.app')
     <x-slot name="header">
         <h2 class="text-xl font-semibold text-gray-800">
             {{ __('Mein Profil') }}
@@ -90,4 +90,4 @@
 
         </div>
     </div>
-</x-app-layout>
+

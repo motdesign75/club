@@ -3,12 +3,10 @@
 @section('title', 'Neues Protokoll')
 
 @push('head')
-    {{-- Trix Editor Styles (funktionierende Quelle über unpkg) --}}
     <link rel="stylesheet" href="https://unpkg.com/trix@2.0.0/dist/trix.css">
 @endpush
 
 @push('scripts')
-    {{-- Trix Editor Script (funktionierende Quelle über unpkg) --}}
     <script src="https://unpkg.com/trix@2.0.0/dist/trix.umd.min.js"></script>
 @endpush
 
@@ -47,17 +45,52 @@
             @enderror
         </div>
 
-        {{-- Teilnehmer --}}
+        {{-- Ort --}}
+        <div class="mb-4">
+            <label for="location" class="block text-sm font-medium text-gray-700">Ort</label>
+            <input id="location" name="location" type="text"
+                   class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
+                   value="{{ old('location') }}" placeholder="z. B. Vereinsheim Gilde Eck">
+            @error('location')
+                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- Beginn --}}
+        <div class="mb-4">
+            <label for="start_time" class="block text-sm font-medium text-gray-700">Beginn</label>
+            <input id="start_time" name="start_time" type="time"
+                   class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
+                   value="{{ old('start_time') }}">
+            @error('start_time')
+                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- Ende --}}
+        <div class="mb-4">
+            <label for="end_time" class="block text-sm font-medium text-gray-700">Ende</label>
+            <input id="end_time" name="end_time" type="time"
+                   class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
+                   value="{{ old('end_time') }}">
+            @error('end_time')
+                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- Teilnehmer (Checkbox-Grid) --}}
         <div class="mb-6">
-            <label for="participant_ids" class="block text-sm font-medium text-gray-700">Teilnehmer</label>
-            <select id="participant_ids" name="participant_ids[]" multiple
-                    class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Teilnehmer</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach ($members as $member)
-                    <option value="{{ $member->id }}" {{ collect(old('participant_ids'))->contains($member->id) ? 'selected' : '' }}>
-                        {{ $member->full_name }}
-                    </option>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="participant_ids[]" value="{{ $member->id }}"
+                               {{ in_array($member->id, old('participant_ids', [])) ? 'checked' : '' }}
+                               class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring focus:ring-blue-200">
+                        <span>{{ $member->full_name }}</span>
+                    </label>
                 @endforeach
-            </select>
+            </div>
             @error('participant_ids')
                 <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
             @enderror

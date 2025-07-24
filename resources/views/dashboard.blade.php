@@ -18,7 +18,9 @@
 
         {{-- Mitglieder --}}
         <a href="{{ route('members.index') }}" class="flex items-center space-x-4 bg-white shadow rounded-xl p-4 hover:bg-blue-50 transition group">
-            <div class="bg-blue-100 text-blue-700 rounded-full p-3 text-xl">👥</div>
+            <div class="bg-blue-100 text-blue-700 rounded-full p-3">
+                <x-heroicon-o-users class="w-6 h-6"/>
+            </div>
             <div>
                 <p class="text-sm text-gray-500">Mitglieder</p>
                 <p class="text-2xl font-bold text-gray-800 group-hover:text-blue-700">{{ $membersCount }}</p>
@@ -27,7 +29,9 @@
 
         {{-- Neue Mitglieder im Monat --}}
         <a href="{{ route('members.index') }}" class="flex items-center space-x-4 bg-white shadow rounded-xl p-4 hover:bg-green-50 transition group">
-            <div class="bg-green-100 text-green-700 rounded-full p-3 text-xl">➕</div>
+            <div class="bg-green-100 text-green-700 rounded-full p-3">
+                <x-heroicon-o-user-plus class="w-6 h-6"/>
+            </div>
             <div>
                 <p class="text-sm text-gray-500">Neue im {{ now()->translatedFormat('F') }}</p>
                 <p class="text-2xl font-bold text-gray-800 group-hover:text-green-700">{{ $entries->count() }}</p>
@@ -36,7 +40,9 @@
 
         {{-- Lizenztyp --}}
         <div class="flex items-center space-x-4 bg-white shadow rounded-xl p-4">
-            <div class="bg-yellow-100 text-yellow-700 rounded-full p-3 text-xl">🔐</div>
+            <div class="bg-yellow-100 text-yellow-700 rounded-full p-3">
+                <x-heroicon-o-lock-closed class="w-6 h-6"/>
+            </div>
             <div>
                 <p class="text-sm text-gray-500">Lizenz</p>
                 <p class="text-2xl font-bold text-gray-800">{{ $licenseType }}</p>
@@ -47,19 +53,28 @@
 
     {{-- Vereinsaktivitäten: Livewire-Komponente --}}
     <div class="bg-white rounded-xl shadow-md p-6 mt-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">📊 Vereinsaktivitäten im {{ now()->translatedFormat('F') }}</h2>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <x-heroicon-o-presentation-chart-bar class="w-5 h-5 text-indigo-500"/>
+            Vereinsaktivitäten im {{ now()->translatedFormat('F') }}
+        </h2>
         <livewire:dashboard-member-stats />
     </div>
 
     {{-- Mitgliederentwicklung: Livewire-Chart --}}
     <div class="bg-white rounded-xl shadow-md p-6 mt-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">📈 Mitgliederentwicklung {{ now()->year }}</h2>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <x-heroicon-o-chart-bar class="w-5 h-5 text-indigo-500"/>
+            Mitgliederentwicklung {{ now()->year }}
+        </h2>
         <livewire:dashboard-member-chart />
     </div>
 
     {{-- Timeline: Nächste 7 Tage --}}
     <div class="bg-white rounded-xl shadow-md p-6 mt-6">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">🕒 Nächste Termine (7 Tage)</h2>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <x-heroicon-o-calendar-days class="w-5 h-5 text-indigo-500"/>
+            Nächste Termine (7 Tage)
+        </h2>
 
         @forelse ($timeline as $event)
             <div class="flex justify-between items-start border-b py-3 text-sm">

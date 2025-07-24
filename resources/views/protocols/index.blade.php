@@ -58,6 +58,11 @@
                                    class="text-yellow-600 hover:underline">
                                     ✏️ Bearbeiten
                                 </a>
+                                <a href="{{ route('protocols.mail.form', $protocol) }}"
+                                   onclick="return confirm('Möchtest du dieses Protokoll wirklich versenden?')"
+                                   class="text-green-600 hover:underline">
+                                    📧 Versenden
+                                </a>
                             </td>
                         </tr>
                     @empty
