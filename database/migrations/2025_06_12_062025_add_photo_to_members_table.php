@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            $table->string('photo')->nullable()->after('birthday');
+            // Spalte nur hinzufügen, wenn sie noch nicht existiert
+            if (!Schema::hasColumn('members', 'photo')) {
+                $table->string('photo')->nullable()->after('birthday');
+            }
         });
     }
 
@@ -22,7 +25,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('members', function (Blueprint $table) {
-            $table->dropColumn('photo');
+            // Fehlervermeidung beim Rollback
+            if (Schema::hasColumn('members', 'photo')) {
+                $table->dropColumn('photo');
+            }
         });
     }
 };

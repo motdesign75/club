@@ -47,7 +47,7 @@
                         <option value="">– bitte wählen –</option>
                         @foreach($memberships as $membership)
                             <option value="{{ $membership->id }}" {{ $member->membership_id == $membership->id ? 'selected' : '' }}>
-                                {{ $membership->name }} – {{ number_format($membership->fee, 2, ',', '.') }} € / {{ $membership->billing_cycle }}
+                                {{ $membership->name }} – {{ number_format($membership->amount, 2, ',', '.') }} € / {{ $membership->interval }}
                             </option>
                         @endforeach
                     </select>
@@ -133,7 +133,7 @@
         </x-ui.formblock>
         @endif
 
-        {{-- Save-Button (Sticky auf Desktop) --}}
+        {{-- Save-Button --}}
         <div class="pt-6 text-right sticky bottom-0 bg-white z-10">
             <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition duration-200">
                 💾 Änderungen speichern

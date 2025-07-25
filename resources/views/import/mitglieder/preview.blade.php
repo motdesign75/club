@@ -4,7 +4,6 @@
 
 @section('content')
     <div class="max-w-6xl mx-auto space-y-6">
-
         <div class="bg-white rounded shadow p-6">
             <h1 class="text-2xl font-bold text-gray-800 mb-4">📊 CSV-Vorschau & Feldzuordnung</h1>
 
@@ -33,17 +32,43 @@
                                         <div>
                                             <select name="mapping[{{ $i }}]" class="mt-1 block w-full text-xs border rounded p-1">
                                                 <option value="skip">Ignorieren</option>
-                                                <option value="salutation">Anrede</option>
-                                                <option value="first_name">Vorname</option>
-                                                <option value="last_name">Nachname</option>
-                                                <option value="birthday">Geburtstag</option>
-                                                <option value="email">E-Mail</option>
-                                                <option value="mobile">Mobilfunknummer</option>
-                                                <option value="phone">Telefon</option>
-                                                <option value="street">Straße</option>
-                                                <option value="zip">PLZ</option>
-                                                <option value="city">Ort</option>
-                                                <!-- Weitere Felder können hier ergänzt werden -->
+
+                                                <optgroup label="🧍 Mitglied">
+                                                    <option value="gender">Geschlecht</option>
+                                                    <option value="salutation">Anrede</option>
+                                                    <option value="title">Titel</option>
+                                                    <option value="first_name">Vorname</option>
+                                                    <option value="last_name">Nachname</option>
+                                                    <option value="company">Firma / Organisation</option>
+                                                    <option value="birthday">Geburtstag</option>
+                                                </optgroup>
+
+                                                <optgroup label="🪪 Mitgliedschaft">
+                                                    <option value="member_id">Mitgliedsnummer</option>
+                                                    <option value="entry_date">Eintritt</option>
+                                                    <option value="exit_date">Austritt</option>
+                                                    <option value="termination_date">Kündigungsdatum</option>
+                                                </optgroup>
+
+                                                <optgroup label="📞 Kommunikation">
+                                                    <option value="email">E-Mail</option>
+                                                    <option value="mobile">Mobilfunknummer</option>
+                                                    <option value="phone">Festnetznummer</option>
+                                                </optgroup>
+
+                                                <optgroup label="🏠 Adresse">
+                                                    <option value="street">Straße + Nr.</option>
+                                                    <option value="address_extra">Adresszusatz</option>
+                                                    <option value="zip">PLZ</option>
+                                                    <option value="city">Ort</option>
+                                                    <option value="country">Land</option>
+                                                    <option value="co">C/O</option>
+                                                </optgroup>
+
+                                                <optgroup label="🏷️ Tags & Foto">
+                                                    <option value="tags">Tags</option>
+                                                    <option value="photo">Profilfoto (Dateiname)</option>
+                                                </optgroup>
                                             </select>
                                         </div>
                                     </th>
@@ -54,7 +79,9 @@
                             @foreach($rows as $row)
                                 <tr>
                                     @foreach($row as $value)
-                                        <td class="border px-3 py-2 text-sm text-gray-800">{{ $value }}</td>
+                                        <td class="border px-3 py-2 text-sm text-gray-800">
+                                            {{ $value }}
+                                        </td>
                                     @endforeach
                                 </tr>
                             @endforeach
@@ -69,6 +96,5 @@
                 </div>
             </form>
         </div>
-
     </div>
 @endsection

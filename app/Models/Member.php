@@ -71,6 +71,7 @@ class Member extends Model
         });
     }
 
+    // Beziehungen
     public function tenant()
     {
         return $this->belongsTo(Tenant::class);
@@ -91,25 +92,31 @@ class Member extends Model
         return $this->belongsToMany(Protocol::class, 'protocol_member')->withTimestamps();
     }
 
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+
+    // Scopes
     public function scopeForCurrentTenant($query)
     {
         return $query->where('tenant_id', auth()->user()->tenant_id);
     }
 
+    // Accessor: Vollständiger Name
     public function getFullNameAttribute()
     {
         $parts = array_filter([$this->title, $this->first_name, $this->last_name]);
         return implode(' ', $parts);
     }
 
+    // Accessor: Ländename (aus Konfigurationsdatei)
     public function getCountryNameAttribute()
     {
         return config('countries.list')[$this->country] ?? $this->country;
     }
 
-    /**
-     * Automatischer Status eines Mitglieds
-     */
+    // Accessor: Mitgliedsstatus
     public function getStatusAttribute(): string
     {
         $today = now();
@@ -127,13 +134,5 @@ class Member extends Model
         }
 
         return 'zukünftig';
-    }
-
-    /**
-     * Tags eines Mitglieds (z. B. Eltern, Vorstand, Jugendgruppe etc.)
-     */
-    public function tags()
-    {
-        return $this->belongsToMany(Tag::class);
     }
 }

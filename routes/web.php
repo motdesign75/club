@@ -20,14 +20,17 @@ use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Settings\EmailSettingsController;
 
+// Startseite → Weiterleitung zum Dashboard
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+// Dashboard
 Route::get('/dashboard', [EventController::class, 'dashboardEvents'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+// Öffentlich sichtbare Seiten
 Route::view('/impressum', 'impressum')->name('impressum');
 
 Route::middleware('auth')->group(function () {
@@ -43,36 +46,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/members/{member}/datenauskunft', [MemberController::class, 'exportDatenauskunft'])->name('members.datenauskunft');
     Route::get('/members/{member}/pdf', [MemberController::class, 'exportDatenauskunft'])->name('members.pdf');
 
-    // Vereinsprofil
-    Route::get('/verein', [TenantController::class, 'show'])->name('tenant.show');
-    Route::get('/verein/bearbeiten', [TenantController::class, 'edit'])->name('tenant.edit');
-    Route::patch('/verein/bearbeiten', [TenantController::class, 'update'])->name('tenant.update');
-
     // Mitgliedschaften
     Route::resource('memberships', MembershipController::class)->except(['show']);
 
-    // Tags verwalten
+    // Tags
     Route::resource('tags', TagController::class)->except(['show']);
-
-    // Nummernkreise
-    Route::resource('number-ranges', InvoiceNumberRangeController::class)->names('number_ranges');
-
-    // Beitragsrechnungen
-    Route::resource('invoices', InvoiceController::class)->only(['index', 'create', 'store', 'show']);
-    Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
 
     // CSV-Import
     Route::get('/import/mitglieder', [ImportController::class, 'showUploadForm'])->name('import.mitglieder');
     Route::post('/import/mitglieder/preview', [ImportController::class, 'preview'])->name('import.mitglieder.preview');
     Route::post('/import/mitglieder/confirm', [ImportController::class, 'confirm'])->name('import.mitglieder.confirm');
 
+    // Vereinsprofil
+    Route::get('/verein', [TenantController::class, 'show'])->name('tenant.show');
+    Route::get('/verein/bearbeiten', [TenantController::class, 'edit'])->name('tenant.edit');
+    Route::patch('/verein/bearbeiten', [TenantController::class, 'update'])->name('tenant.update');
+
     // Veranstaltungen
     Route::resource('events', EventController::class)->except(['show']);
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
-
-    // Rollen
-    Route::get('/einstellungen/rollen', [RoleController::class, 'edit'])->name('roles.edit');
-    Route::post('/einstellungen/rollen', [RoleController::class, 'update'])->name('roles.update');
 
     // Eigene Mitgliederfelder
     Route::prefix('einstellungen/mitgliederfelder')->name('custom-fields.')->group(function () {
@@ -84,6 +76,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{customMemberField}', [CustomMemberFieldController::class, 'destroy'])->name('destroy');
     });
 
+    // Rollen
+    Route::get('/einstellungen/rollen', [RoleController::class, 'edit'])->name('roles.edit');
+    Route::post('/einstellungen/rollen', [RoleController::class, 'update'])->name('roles.update');
+
     // Finanzen
     Route::resource('accounts', AccountController::class)->except(['show']);
     Route::resource('transactions', TransactionController::class)->except(['show', 'edit', 'update']);
@@ -94,6 +90,13 @@ Route::middleware('auth')->group(function () {
     // Belege
     Route::get('/beleg/{filename}', [ReceiptController::class, 'show'])->name('receipts.show');
 
+    // Beitragsrechnungen
+    Route::resource('invoices', InvoiceController::class)->only(['index', 'create', 'store', 'show']);
+    Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+
+    // Nummernkreise
+    Route::resource('number-ranges', InvoiceNumberRangeController::class)->names('number_ranges');
+
     // Protokolle
     Route::get('/protokolle', [ProtocolController::class, 'index'])->name('protocols.index');
     Route::get('/protokolle/neu', [ProtocolController::class, 'create'])->name('protocols.create');
@@ -102,20 +105,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/protokolle/{protocol}/bearbeiten', [ProtocolController::class, 'edit'])->name('protocols.edit');
     Route::put('/protokolle/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
 
-    // Protokoll-Mail Vorschau + Versand
+    // Protokoll-Mail Vorschau und Versand
     Route::get('/protokolle/{protocol}/mail', [ProtocolController::class, 'mailForm'])->name('protocols.mail.form');
     Route::post('/protokolle/{protocol}/mail', [ProtocolController::class, 'sendMail'])->name('protocols.mail.send');
 
-    // Test-PDF
-    Route::get('/pdf-test', [PdfTestController::class, 'test'])->name('pdf.test');
-
-    // Stripe Lizenz
+    // Lizenzverwaltung / Stripe
     Route::get('/license/upgrade', [LicenseController::class, 'upgrade'])->name('license.upgrade');
     Route::post('/license/checkout', [LicenseController::class, 'checkout'])->name('license.checkout');
 
     // SMTP-Einstellungen
     Route::get('/settings/email', [EmailSettingsController::class, 'edit'])->name('settings.email.edit');
     Route::put('/settings/email', [EmailSettingsController::class, 'update'])->name('settings.email.update');
+
+    // PDF-Test
+    Route::get('/pdf-test', [PdfTestController::class, 'test'])->name('pdf.test');
 
     // Debug
     Route::get('/envcheck', function () {

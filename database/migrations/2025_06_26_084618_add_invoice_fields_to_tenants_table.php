@@ -20,14 +20,24 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            $table->dropColumn([
-                'iban',
-                'bic',
-                'bank_name',
-                'chairman_name',
-                'logo_path',
-                'pdf_template',
-            ]);
+            if (Schema::hasColumn('tenants', 'iban')) {
+                $table->dropColumn('iban');
+            }
+            if (Schema::hasColumn('tenants', 'bic')) {
+                $table->dropColumn('bic');
+            }
+            if (Schema::hasColumn('tenants', 'bank_name')) {
+                $table->dropColumn('bank_name');
+            }
+            if (Schema::hasColumn('tenants', 'chairman_name')) {
+                $table->dropColumn('chairman_name');
+            }
+            if (Schema::hasColumn('tenants', 'logo_path')) {
+                $table->dropColumn('logo_path');
+            }
+            if (Schema::hasColumn('tenants', 'pdf_template')) {
+                $table->dropColumn('pdf_template');
+            }
         });
     }
 };

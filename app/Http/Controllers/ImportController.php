@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Models\Member;
 use Carbon\Carbon;
 
@@ -52,7 +53,9 @@ class ImportController extends Controller
         $headers = $lines[0] ?? [];
         $rows = array_slice($lines, 1);
 
+        $allowedGenders = ['männlich', 'weiblich', 'divers'];
         $allowedSalutations = ['Herr', 'Frau', 'Divers', 'Liebe', 'Lieber', 'Hallo'];
+        $dateFields = ['birthday', 'entry_date', 'exit_date', 'cancellation_date', 'termination_date'];
 
         foreach ($rows as $row) {
             if (!is_array($row) || count($row) === 0 || empty(trim($row[0]))) {
@@ -62,33 +65,48 @@ class ImportController extends Controller
             $data = [];
 
             foreach ($request->input('mapping') as $index => $field) {
-                if ($field !== 'skip' && isset($row[$index])) {
-                    $value = trim($row[$index]);
-
-                    // Anrede prüfen
-                    if ($field === 'salutation') {
-                        if ($value === '' || !in_array($value, $allowedSalutations)) {
-                            continue;
-                        }
-                    }
-
-                    // Geburtstag formatieren (von z. B. 04.04.1971 zu 1971-04-04)
-                    if ($field === 'birthday') {
-                        try {
-                            $value = Carbon::createFromFormat('d.m.Y', $value)->format('Y-m-d');
-                        } catch (\Exception $e) {
-                            $value = null; // Fehlerhafte Daten ignorieren
-                        }
-                    }
-
-                    $data[$field] = $value;
+                if ($field === 'skip' || !isset($row[$index])) {
+                    continue;
                 }
+
+                $value = trim($row[$index]);
+
+                // Leere Strings zu NULL konvertieren
+                if ($value === '') {
+                    $value = null;
+                }
+
+                // Geschlecht validieren
+                if ($field === 'gender' && $value !== null) {
+                    if (!in_array(Str::lower($value), $allowedGenders)) {
+                        $value = null;
+                    } else {
+                        // Optional: Normalisieren (z. B. erster Buchstabe groß)
+                        $value = ucfirst(Str::lower($value));
+                    }
+                }
+
+                // Anrede validieren
+                if ($field === 'salutation' && $value !== null && !in_array($value, $allowedSalutations)) {
+                    $value = null;
+                }
+
+                // Datumsfelder verarbeiten
+                if (in_array($field, $dateFields) && $value !== null) {
+                    try {
+                        $value = Carbon::createFromFormat('d.m.Y', $value)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $value = null;
+                    }
+                }
+
+                $data[$field] = $value;
             }
 
-            // Mandanten-ID setzen
+            // Mandantenzugehörigkeit
             $data['tenant_id'] = auth()->user()->tenant_id ?? null;
 
-            // Nur speichern, wenn sinnvoll
+            // Nur wenn Name oder Vorname vorhanden
             if (!empty($data['first_name']) || !empty($data['last_name'])) {
                 Member::create($data);
             }

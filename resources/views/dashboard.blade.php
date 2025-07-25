@@ -57,7 +57,7 @@
             <x-heroicon-o-presentation-chart-bar class="w-5 h-5 text-indigo-500"/>
             Vereinsaktivitäten im {{ now()->translatedFormat('F') }}
         </h2>
-        <livewire:dashboard-member-stats />
+        @livewire('dashboard-member-stats')
     </div>
 
     {{-- Mitgliederentwicklung: Livewire-Chart --}}
@@ -66,7 +66,7 @@
             <x-heroicon-o-chart-bar class="w-5 h-5 text-indigo-500"/>
             Mitgliederentwicklung {{ now()->year }}
         </h2>
-        <livewire:dashboard-member-chart />
+        @livewire('dashboard-member-chart')
     </div>
 
     {{-- Timeline: Nächste 7 Tage --}}

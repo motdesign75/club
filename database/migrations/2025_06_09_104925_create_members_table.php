@@ -19,15 +19,16 @@ return new class extends Migration {
             $table->string('last_name');
             $table->string('organization')->nullable();
             $table->date('birthday')->nullable();
+            $table->string('photo')->nullable(); // NEU: Profilfoto
 
             // Block: Mitgliedschaft
             $table->string('member_id')->nullable();
             $table->date('entry_date')->nullable();
             $table->date('exit_date')->nullable();
-            $table->date('cancellation_date')->nullable();
-
-            // NEU: Verknüpfung zur Mitgliedschaft
+            $table->date('termination_date')->nullable();
             $table->foreignId('membership_id')->nullable()->constrained()->onDelete('set null');
+            $table->decimal('membership_amount', 8, 2)->nullable(); // NEU: Betrag
+            $table->string('membership_interval')->nullable();      // NEU: Abrechnungsintervall
 
             // Block: Kommunikation
             $table->string('email')->nullable();
@@ -36,7 +37,7 @@ return new class extends Migration {
 
             // Block: Adresse
             $table->string('street')->nullable();
-            $table->string('address_extra')->nullable();
+            $table->string('address_addition')->nullable();
             $table->string('zip')->nullable();
             $table->string('city')->nullable();
             $table->string('country')->default('Deutschland');
@@ -44,6 +45,7 @@ return new class extends Migration {
 
             $table->timestamps();
 
+            // Fremdschlüssel
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
         });
     }

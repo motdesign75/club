@@ -14,12 +14,12 @@ class Membership extends Model
     protected $fillable = [
         'tenant_id',
         'name',
-        'fee',
-        'billing_cycle',
+        'amount',
+        'interval',
     ];
 
     protected $casts = [
-        'fee' => 'float',
+       'amount' => 'float',
     ];
 
     /**
