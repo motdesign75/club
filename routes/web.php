@@ -19,6 +19,7 @@ use App\Http\Controllers\PdfTestController;
 use App\Http\Controllers\LicenseController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Settings\EmailSettingsController;
+use App\Http\Controllers\FeedbackController;
 
 // Startseite → Weiterleitung zum Dashboard
 Route::get('/', function () {
@@ -34,6 +35,9 @@ Route::get('/dashboard', [EventController::class, 'dashboardEvents'])
 Route::view('/impressum', 'impressum')->name('impressum');
 
 Route::middleware('auth')->group(function () {
+
+    // Feedback
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 
     // Profil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

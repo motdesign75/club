@@ -69,6 +69,64 @@
     </main>
 </div>
 
+<!-- Feedback Button + Modal -->
+@auth
+    <button id="feedbackToggle"
+        class="fixed bottom-6 right-6 z-50 bg-[#2954A3] text-white px-4 py-2 rounded-full shadow-lg hover:bg-[#1E3F7F] transition">
+        🗣️ Feedback geben
+    </button>
+
+    <!-- Modal -->
+    <div id="feedbackModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-xl w-full max-w-lg relative shadow-xl">
+            <button onclick="closeFeedback()" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-xl">&times;</button>
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Dein Feedback</h2>
+
+            <form method="POST" action="{{ route('feedback.store') }}">
+                @csrf
+
+                <!-- Kategorieauswahl -->
+                <label for="category" class="block font-medium text-gray-700 mb-1">Kategorie</label>
+                <select name="category" id="category"
+                        class="w-full border border-gray-300 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-[#2954A3] focus:outline-none"
+                        required>
+                    <option value="Fehler">🐞 Fehler</option>
+                    <option value="Verbesserung">🔧 Verbesserung</option>
+                    <option value="Allgemein">💬 Allgemein</option>
+                </select>
+
+                <!-- Versteckte Felder für Route und URL -->
+                <input type="hidden" name="view" value="{{ Route::currentRouteName() }}">
+                <input type="hidden" name="url" value="{{ url()->full() }}">
+
+                <!-- Nachricht -->
+                <textarea name="message" required rows="5"
+                          class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#2954A3] focus:outline-none"
+                          placeholder="Was können wir verbessern? Oder hast du einen Fehler entdeckt?"></textarea>
+
+                <button type="submit"
+                        class="mt-4 bg-[#2954A3] text-white px-4 py-2 rounded-lg hover:bg-[#1E3F7F] transition">
+                    ✅ Feedback absenden
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const toggleBtn = document.getElementById('feedbackToggle');
+        const modal = document.getElementById('feedbackModal');
+
+        toggleBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+        });
+
+        function closeFeedback() {
+            modal.classList.add('hidden');
+        }
+    </script>
+@endauth
+
+
 @livewireScripts
 @stack('scripts')
 </body>
