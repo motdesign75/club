@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Member;
 use Illuminate\Support\Carbon;
-use Livewire\Component;
+use livewire\Component;
 
 class DashboardMemberChart extends Component
 {

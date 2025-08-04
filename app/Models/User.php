@@ -12,7 +12,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * Die Felder, die massenweise zuweisbar sind.
+     * Felder, die massenweise zuweisbar sind.
      *
      * @var array<int, string>
      */
@@ -21,31 +21,30 @@ class User extends Authenticatable
         'email',
         'password',
         'tenant_id',
+        'role',
     ];
 
     /**
-     * Diese Felder werden bei Serialisierung verborgen.
+     * Felder, die bei Serialisierung verborgen werden.
      *
      * @var array<int, string>
      */
     protected $hidden = [
         'password',
         'remember_token',
-        // 'two_factor_recovery_codes',
-        // 'two_factor_secret',
     ];
 
     /**
-     * Accessors, die automatisch angehängt werden sollen.
+     * Automatisch anzuhängende Accessors.
      *
      * @var array<int, string>
      */
     protected $appends = [
-        // 'profile_photo_url',
+        // Beispiel: 'profile_photo_url',
     ];
 
     /**
-     * Typ-Casts für bestimmte Felder.
+     * Typ-Casts für Felder.
      *
      * @return array<string, string>
      */
@@ -58,7 +57,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Beziehung zum aktuellen Verein (Mandant).
+     * Beziehung zum zugehörigen Mandanten (Tenant/Verein).
      */
     public function tenant()
     {

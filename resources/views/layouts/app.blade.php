@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', config('app.name', 'Clubano'))</title>
 
+    {{-- Vite: CSS & JS (inkl. Alpine) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    {{-- Livewire Styles --}}
     @livewireStyles
+
+    {{-- Livewire v3 Script --}}
+    <script src="{{ asset('vendor/livewire/livewire.js') }}" data-turbo-eval="false" data-csrf="{{ csrf_token() }}"></script>
+
     @stack('head')
 </head>
 <body class="h-full antialiased font-sans text-gray-800">
@@ -126,8 +131,9 @@
     </script>
 @endauth
 
-
+{{-- Livewire Scripts – weiterhin erforderlich --}}
 @livewireScripts
+
 @stack('scripts')
 </body>
 </html>

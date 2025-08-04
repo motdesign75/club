@@ -39,6 +39,19 @@
             </div>
 
             <div>
+                <label for="tax_area" class="block text-sm font-medium text-gray-700">Bereich (steuerlich) *</label>
+                <select name="tax_area" id="tax_area"
+                        class="mt-1 w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                        required>
+                    <option value="">– Bitte wählen –</option>
+                    <option value="ideell" {{ old('tax_area') == 'ideell' ? 'selected' : '' }}>Ideeller Bereich</option>
+                    <option value="zweckbetrieb" {{ old('tax_area') == 'zweckbetrieb' ? 'selected' : '' }}>Zweckbetrieb</option>
+                    <option value="wirtschaftlich" {{ old('tax_area') == 'wirtschaftlich' ? 'selected' : '' }}>Wirtschaftlicher Geschäftsbetrieb</option>
+                </select>
+                @error('tax_area') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
                 <label for="account_from_id" class="block text-sm font-medium text-gray-700">Von-Konto *</label>
                 <select name="account_from_id" id="account_from_id"
                         class="mt-1 w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"

@@ -1,30 +1,31 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\MemberController;
-use App\Http\Controllers\TenantController;
-use App\Http\Controllers\EventController;
-use App\Http\Controllers\ImportController;
-use App\Http\Controllers\MembershipController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\AccountController;
-use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\CustomMemberFieldController;
-use App\Http\Controllers\ReceiptController;
-use App\Http\Controllers\ProtocolController;
-use App\Http\Controllers\InvoiceNumberRangeController;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\PdfTestController;
-use App\Http\Controllers\LicenseController;
-use App\Http\Controllers\TagController;
-use App\Http\Controllers\Settings\EmailSettingsController;
-use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\{
+    ProfileController,
+    MemberController,
+    TenantController,
+    EventController,
+    ImportController,
+    MembershipController,
+    RoleController,
+    AccountController,
+    TransactionController,
+    CustomMemberFieldController,
+    ReceiptController,
+    ProtocolController,
+    InvoiceNumberRangeController,
+    InvoiceController,
+    PdfTestController,
+    LicenseController,
+    TagController,
+    FeedbackController,
+    EmailSettingsController,
+    UserController
+};
 
 // Startseite → Weiterleitung zum Dashboard
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-});
+Route::get('/', fn () => redirect()->route('dashboard'));
 
 // Dashboard
 Route::get('/dashboard', [EventController::class, 'dashboardEvents'])
@@ -34,6 +35,7 @@ Route::get('/dashboard', [EventController::class, 'dashboardEvents'])
 // Öffentlich sichtbare Seiten
 Route::view('/impressum', 'impressum')->name('impressum');
 
+// Authentifizierte Bereiche
 Route::middleware('auth')->group(function () {
 
     // Feedback
@@ -43,6 +45,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Benutzerverwaltung ✅ NEU
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy'); // ✅ hinzugefügt
 
     // Mitglieder
     Route::resource('members', MemberController::class);
@@ -84,7 +92,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/einstellungen/rollen', [RoleController::class, 'edit'])->name('roles.edit');
     Route::post('/einstellungen/rollen', [RoleController::class, 'update'])->name('roles.update');
 
-    // Finanzen
+    // Finanzen – Konten und Buchungen
     Route::resource('accounts', AccountController::class)->except(['show']);
     Route::resource('transactions', TransactionController::class)->except(['show', 'edit', 'update']);
     Route::get('/transactions/summary', [TransactionController::class, 'summary'])->name('transactions.summary');
@@ -108,8 +116,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/protokolle/{protocol}', [ProtocolController::class, 'show'])->name('protocols.show');
     Route::get('/protokolle/{protocol}/bearbeiten', [ProtocolController::class, 'edit'])->name('protocols.edit');
     Route::put('/protokolle/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
-
-    // Protokoll-Mail Vorschau und Versand
     Route::get('/protokolle/{protocol}/mail', [ProtocolController::class, 'mailForm'])->name('protocols.mail.form');
     Route::post('/protokolle/{protocol}/mail', [ProtocolController::class, 'sendMail'])->name('protocols.mail.send');
 
@@ -125,9 +131,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/pdf-test', [PdfTestController::class, 'test'])->name('pdf.test');
 
     // Debug
-    Route::get('/envcheck', function () {
-        dd(config('app.env'), config('app.debug'));
-    });
+    Route::get('/envcheck', fn () => dd(config('app.env'), config('app.debug')));
 });
 
+// Authentifizierung (Fortify)
 require __DIR__.'/auth.php';

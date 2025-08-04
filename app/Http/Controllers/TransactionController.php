@@ -11,24 +11,43 @@ use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $filter = $request->input('filter');
+        $year = $request->input('year');
+        $month = $request->input('month');
+
         $transactions = Transaction::forCurrentTenant()
             ->with(['account_from', 'account_to'])
-            ->orderByDesc('date')
-            ->get()
-            ->map(function ($transaction) {
-                // Prüfen, ob Datei vorhanden ist
-                if ($transaction->receipt_file) {
-                    $path = storage_path('app/public/receipts/' . $transaction->receipt_file);
-                    $transaction->receipt_exists = file_exists($path);
-                } else {
-                    $transaction->receipt_exists = false;
-                }
-                return $transaction;
-            });
+            ->orderByDesc('date');
 
-        return view('transactions.index', compact('transactions'));
+        if ($filter === 'income') {
+            $transactions->whereHas('account_from', fn($q) => $q->where('type', 'einnahme'));
+        }
+
+        if ($filter === 'expense') {
+            $transactions->whereHas('account_to', fn($q) => $q->where('type', 'ausgabe'));
+        }
+
+        if ($filter === 'storno') {
+            $transactions->where('description', 'like', 'Storno:%');
+        }
+
+        if ($year) {
+            $transactions->whereYear('date', $year);
+        }
+
+        if ($month) {
+            $transactions->whereMonth('date', $month);
+        }
+
+        $transactions = $transactions->get()->map(function ($transaction) {
+            $path = storage_path('app/public/receipts/' . $transaction->receipt_file);
+            $transaction->receipt_exists = $transaction->receipt_file && file_exists($path);
+            return $transaction;
+        });
+
+        return view('transactions.index', compact('transactions', 'filter', 'year', 'month'));
     }
 
     public function create()
@@ -45,10 +64,10 @@ class TransactionController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'account_from_id' => ['required', 'exists:accounts,id'],
             'account_to_id' => ['required', 'exists:accounts,id'],
+            'tax_area' => ['required', 'in:ideell,zweckbetrieb,wirtschaftlich'],
             'receipt_file' => ['nullable', 'file', 'mimes:jpeg,jpg,png,pdf', 'max:2048'],
         ]);
 
-        // Belegnummer generieren
         $latest = Transaction::orderBy('id', 'desc')->first();
         $nextNumber = $latest ? $latest->id + 1 : 1;
         $receiptNumber = 'TRX-' . date('Y') . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
@@ -60,6 +79,7 @@ class TransactionController extends Controller
         $transaction->amount = $validated['amount'];
         $transaction->account_from_id = $validated['account_from_id'];
         $transaction->account_to_id = $validated['account_to_id'];
+        $transaction->tax_area = $validated['tax_area'];
         $transaction->receipt_number = $receiptNumber;
 
         if ($request->hasFile('receipt_file')) {
@@ -70,6 +90,9 @@ class TransactionController extends Controller
         }
 
         $transaction->save();
+
+        $transaction->account_from?->updateBalance();
+        $transaction->account_to?->updateBalance();
 
         return redirect()->route('transactions.index')->with('success', 'Buchung erfolgreich gespeichert.');
     }
@@ -88,14 +111,23 @@ class TransactionController extends Controller
             'reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        Transaction::create([
+        $latest = Transaction::orderBy('id', 'desc')->first();
+        $nextNumber = $latest ? $latest->id + 1 : 1;
+        $receiptNumber = 'TRX-' . date('Y') . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        $storno = Transaction::create([
             'tenant_id' => $transaction->tenant_id,
             'date' => now()->format('Y-m-d'),
             'description' => 'Storno: ' . $transaction->description . ' – Grund: ' . $request->reason,
             'amount' => $transaction->amount,
             'account_from_id' => $transaction->account_to_id,
             'account_to_id' => $transaction->account_from_id,
+            'tax_area' => $transaction->tax_area,
+            'receipt_number' => $receiptNumber,
         ]);
+
+        $storno->account_from?->updateBalance();
+        $storno->account_to?->updateBalance();
 
         return redirect()->route('transactions.index')->with('success', 'Buchung wurde storniert.');
     }

@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Livewire;
+use App\Http\Livewire\DashboardMemberStats;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Livewire-Komponente registrieren (wichtig für Livewire 2)
+        Livewire::component('dashboard-member-stats', DashboardMemberStats::class);
+
+        // Dynamische SMTP-Konfiguration
         if (Auth::check()) {
             $tenant = Auth::user()->tenant;
 
