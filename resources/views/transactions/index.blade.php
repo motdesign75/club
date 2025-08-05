@@ -10,7 +10,6 @@
     @endphp
 
     <div class="space-y-8">
-
         {{-- Überschrift und Filter --}}
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -18,7 +17,6 @@
                 <p class="text-sm text-gray-500">Alle Einnahmen, Ausgaben und Stornos im Überblick.</p>
             </div>
             <div class="flex flex-wrap items-end gap-3">
-
                 {{-- Filter-Knöpfe --}}
                 <div class="flex gap-2">
                     <a href="{{ route('transactions.index') }}"
@@ -97,22 +95,36 @@
                             $icon = '🔄';
                             if (str_starts_with($transaction->description, 'Storno:')) {
                                 $icon = '♻️';
-                            } elseif(optional($transaction->account_from)->type === 'einnahme') {
+                            } elseif(optional($transaction->account_to)->type === 'einnahme') {
                                 $icon = '📥';
                             } elseif(optional($transaction->account_to)->type === 'ausgabe') {
                                 $icon = '📤';
                             }
+
+                            $amountClass = 'text-gray-800'; // Standard
+
+                            if (str_starts_with($transaction->description, 'Storno:')) {
+                                $amountClass = 'text-black';
+                            } elseif(optional($transaction->account_to)->type === 'einnahme') {
+                                $amountClass = 'text-green-600';
+                            } elseif(optional($transaction->account_to)->type === 'ausgabe') {
+                                $amountClass = 'text-red-600';
+                            }
                         @endphp
                         <tr class="{{ $loop->odd ? 'bg-white' : 'bg-gray-50' }} hover:bg-blue-50 transition">
-                            <td class="px-4 py-3 font-mono text-sm text-gray-700">{{ \Carbon\Carbon::parse($transaction->date)->format('d.m.Y') }}</td>
-                            <td class="px-4 py-3 font-mono text-xs text-gray-600">{{ $transaction->receipt_number ?? '–' }}</td>
+                            <td class="px-4 py-3 font-mono text-sm text-gray-700">
+                                {{ \Carbon\Carbon::parse($transaction->date)->format('d.m.Y') }}
+                            </td>
+                            <td class="px-4 py-3 font-mono text-xs text-gray-600">
+                                {{ $transaction->receipt_number ?? '–' }}
+                            </td>
                             <td class="px-4 py-3 flex items-center gap-2">
                                 <span class="text-xl">{{ $icon }}</span>
                                 <span>{{ $transaction->description }}</span>
                             </td>
                             <td class="px-4 py-3 text-gray-800">{{ $transaction->account_from->name ?? '-' }}</td>
                             <td class="px-4 py-3 text-gray-800">{{ $transaction->account_to->name ?? '-' }}</td>
-                            <td class="px-4 py-3 text-right font-mono text-gray-800">
+                            <td class="px-4 py-3 text-right font-mono {{ $amountClass }}">
                                 {{ number_format($transaction->amount, 2, ',', '.') }} €
                             </td>
                             <td class="px-4 py-3 text-center">

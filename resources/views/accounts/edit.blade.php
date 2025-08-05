@@ -88,13 +88,17 @@
             {{-- Optionen --}}
             <div class="flex items-center gap-4">
                 <label class="inline-flex items-center">
+                    <input type="hidden" name="online" value="0">
                     <input type="checkbox" name="online" class="rounded text-blue-600"
+                           value="1"
                            {{ old('online', $account->online) ? 'checked' : '' }}>
                     <span class="ml-2 text-sm text-gray-700">Online abrufbar</span>
                 </label>
 
                 <label class="inline-flex items-center">
+                    <input type="hidden" name="active" value="0">
                     <input type="checkbox" name="active" class="rounded text-blue-600"
+                           value="1"
                            {{ old('active', $account->active) ? 'checked' : '' }}>
                     <span class="ml-2 text-sm text-gray-700">Aktiv</span>
                 </label>

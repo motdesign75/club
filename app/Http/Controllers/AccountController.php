@@ -12,9 +12,8 @@ class AccountController extends Controller
      */
     public function index(Request $request)
     {
-        $tab = $request->get('tab', 'bank'); // Standard: bank
+        $tab = $request->get('tab', 'bank');
 
-        // Für die View alle drei Gruppen laden
         $balanceAccounts = Account::forCurrentTenant()
             ->where('active', true)
             ->whereIn('type', ['bank', 'kasse'])
@@ -58,11 +57,11 @@ class AccountController extends Controller
             'balance_start'  => ['nullable', 'numeric'],
             'balance_date'   => ['nullable', 'date'],
             'tax_area'       => ['nullable', 'in:ideell,zweckbetrieb,wirtschaftlich'],
+            'active'         => ['required', 'boolean'],
+            'online'         => ['required', 'boolean'],
         ]);
 
         $validated['tenant_id'] = auth()->user()->tenant_id;
-        $validated['online'] = $request->has('online') ? 1 : 0;
-        $validated['active'] = $request->has('active') ? 1 : 0;
 
         Account::create($validated);
 
@@ -96,10 +95,9 @@ class AccountController extends Controller
             'balance_start'  => ['nullable', 'numeric'],
             'balance_date'   => ['nullable', 'date'],
             'tax_area'       => ['nullable', 'in:ideell,zweckbetrieb,wirtschaftlich'],
+            'active'         => ['required', 'boolean'],
+            'online'         => ['required', 'boolean'],
         ]);
-
-        $validated['online'] = $request->has('online') ? 1 : 0;
-        $validated['active'] = $request->has('active') ? 1 : 0;
 
         $account->update($validated);
 

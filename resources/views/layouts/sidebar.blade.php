@@ -59,7 +59,7 @@
             <a href="{{ route('accounts.index') }}"
                class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-indigo-50 transition-all duration-150 {{ request()->routeIs('accounts.index') ? 'bg-indigo-100 font-bold shadow-inner' : '' }}">
                 <x-heroicon-o-clipboard-document-list class="h-5 w-5 text-indigo-500"/>
-                <span>Kontenplan</span>
+                <span>Konten</span>
             </a>
         </li>
         <li>

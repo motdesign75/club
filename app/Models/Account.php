@@ -27,6 +27,14 @@ class Account extends Model
         'tenant_id',
     ];
 
+    protected $casts = [
+        'active' => 'boolean',
+        'online' => 'boolean',
+        'balance_start' => 'float',
+        'balance_current' => 'float',
+        'balance_date' => 'date',
+    ];
+
     protected static function booted(): void
     {
         static::addGlobalScope(new CurrentTenantScope);
