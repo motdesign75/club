@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Protocol;
+use App\Mail\ProtocolMail;
 use App\Models\Member;
+use App\Models\Protocol;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ProtocolMail;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class ProtocolController extends Controller
 {
@@ -23,37 +25,87 @@ class ProtocolController extends Controller
 
     public function create()
     {
-        $members = Member::forCurrentTenant()->orderBy('last_name')->get();
+        $members = Member::forCurrentTenant()
+            ->orderBy('last_name')
+            ->get();
+
         return view('protocols.create', compact('members'));
     }
 
     public function store(Request $request)
     {
+        $tenantId = auth()->user()->tenant_id;
+
         $validated = $request->validate([
-            'title'           => 'required|string|max:255',
-            'type'            => 'required|string|max:255',
-            'location'        => 'nullable|string|max:255',
-            'start_time'      => 'nullable|date_format:H:i',
-            'end_time'        => 'nullable|date_format:H:i',
-            'content'         => 'required|string',
-            'participant_ids' => 'nullable|array',
-            'participant_ids.*' => 'exists:members,id',
+            'title'             => 'required|string|max:255',
+            'type'              => 'required|string|max:255',
+            'location'          => 'nullable|string|max:255',
+            'start_time'        => 'nullable|date_format:H:i',
+            'end_time'          => 'nullable|date_format:H:i',
+            'content'           => 'required|string',
+            'resolutions'       => 'nullable|string',
+            'next_meeting'      => 'nullable|string',
+            'participant_ids'   => 'nullable|array',
+            'participant_ids.*' => [
+                'integer',
+                'exists:members,id',
+            ],
+            'attachments'       => 'nullable|array',
+            'attachments.*'     => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,webp,doc,docx,xls,xlsx',
         ]);
 
-        $protocol = Protocol::create([
-            'tenant_id' => auth()->user()->tenant_id,
-            'user_id'   => Auth::id(),
-            'title'     => $validated['title'],
-            'type'      => $validated['type'],
-            'location'  => $validated['location'] ?? null,
-            'start_time'=> $validated['start_time'] ?? null,
-            'end_time'  => $validated['end_time'] ?? null,
-            'content'   => $validated['content'],
-        ]);
+        $attachmentPaths = [];
 
-        $protocol->participants()->sync($validated['participant_ids'] ?? []);
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                if ($file && $file->isValid()) {
+                    $attachmentPaths[] = $file->store(
+                        'protocols/' . $tenantId . '/attachments',
+                        'public'
+                    );
+                }
+            }
+        }
 
-        return redirect()->route('protocols.index')->with('success', 'Protokoll erfolgreich gespeichert.');
+        $protocolData = [
+            'tenant_id'     => $tenantId,
+            'user_id'       => Auth::id(),
+            'title'         => $validated['title'],
+            'type'          => $validated['type'],
+            'location'      => $validated['location'] ?? null,
+            'start_time'    => $validated['start_time'] ?? null,
+            'end_time'      => $validated['end_time'] ?? null,
+            'content'       => $validated['content'],
+            'resolutions'   => $validated['resolutions'] ?? null,
+            'next_meeting'  => $validated['next_meeting'] ?? null,
+        ];
+
+        if (Schema::hasColumn('protocols', 'attachments')) {
+            $protocolData['attachments'] = $attachmentPaths;
+        } elseif (Schema::hasColumn('protocols', 'attachment_paths')) {
+            $protocolData['attachment_paths'] = $attachmentPaths;
+        } elseif (Schema::hasColumn('protocols', 'attachment_path')) {
+            $protocolData['attachment_path'] = $attachmentPaths[0] ?? null;
+        }
+
+        $protocol = Protocol::create($protocolData);
+
+        $participantIds = collect($validated['participant_ids'] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $allowedParticipantIds = Member::forCurrentTenant()
+            ->whereIn('id', $participantIds)
+            ->pluck('id')
+            ->all();
+
+        $protocol->participants()->sync($allowedParticipantIds);
+
+        return redirect()
+            ->route('protocols.index')
+            ->with('success', 'Protokoll erfolgreich gespeichert.');
     }
 
     public function show(Protocol $protocol)
@@ -71,7 +123,10 @@ class ProtocolController extends Controller
             abort(403);
         }
 
-        $members = Member::forCurrentTenant()->orderBy('last_name')->get();
+        $members = Member::forCurrentTenant()
+            ->orderBy('last_name')
+            ->get();
+
         $selected = $protocol->participants->pluck('id')->toArray();
 
         return view('protocols.edit', compact('protocol', 'members', 'selected'));
@@ -83,29 +138,80 @@ class ProtocolController extends Controller
             abort(403);
         }
 
+        $tenantId = auth()->user()->tenant_id;
+
         $validated = $request->validate([
-            'title'           => 'required|string|max:255',
-            'type'            => 'required|string|max:255',
-            'location'        => 'nullable|string|max:255',
-            'start_time'      => 'nullable|date_format:H:i',
-            'end_time'        => 'nullable|date_format:H:i',
-            'content'         => 'required|string',
-            'participant_ids' => 'nullable|array',
-            'participant_ids.*' => 'exists:members,id',
+            'title'             => 'required|string|max:255',
+            'type'              => 'required|string|max:255',
+            'location'          => 'nullable|string|max:255',
+            'start_time'        => 'nullable|date_format:H:i',
+            'end_time'          => 'nullable|date_format:H:i',
+            'content'           => 'required|string',
+            'resolutions'       => 'nullable|string',
+            'next_meeting'      => 'nullable|string',
+            'participant_ids'   => 'nullable|array',
+            'participant_ids.*' => [
+                'integer',
+                'exists:members,id',
+            ],
+            'attachments'       => 'nullable|array',
+            'attachments.*'     => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,webp,doc,docx,xls,xlsx',
         ]);
 
-        $protocol->update([
-            'title'      => $validated['title'],
-            'type'       => $validated['type'],
-            'location'   => $validated['location'] ?? null,
-            'start_time' => $validated['start_time'] ?? null,
-            'end_time'   => $validated['end_time'] ?? null,
-            'content'    => $validated['content'],
-        ]);
+        $attachmentPaths = [];
 
-        $protocol->participants()->sync($validated['participant_ids'] ?? []);
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                if ($file && $file->isValid()) {
+                    $attachmentPaths[] = $file->store(
+                        'protocols/' . $tenantId . '/attachments',
+                        'public'
+                    );
+                }
+            }
+        }
 
-        return redirect()->route('protocols.index')->with('success', 'Protokoll erfolgreich aktualisiert.');
+        $protocolData = [
+            'title'         => $validated['title'],
+            'type'          => $validated['type'],
+            'location'      => $validated['location'] ?? null,
+            'start_time'    => $validated['start_time'] ?? null,
+            'end_time'      => $validated['end_time'] ?? null,
+            'content'       => $validated['content'],
+            'resolutions'   => $validated['resolutions'] ?? null,
+            'next_meeting'  => $validated['next_meeting'] ?? null,
+        ];
+
+        if (!empty($attachmentPaths)) {
+            if (Schema::hasColumn('protocols', 'attachments')) {
+                $existing = is_array($protocol->attachments ?? null) ? $protocol->attachments : [];
+                $protocolData['attachments'] = array_values(array_merge($existing, $attachmentPaths));
+            } elseif (Schema::hasColumn('protocols', 'attachment_paths')) {
+                $existing = is_array($protocol->attachment_paths ?? null) ? $protocol->attachment_paths : [];
+                $protocolData['attachment_paths'] = array_values(array_merge($existing, $attachmentPaths));
+            } elseif (Schema::hasColumn('protocols', 'attachment_path')) {
+                $protocolData['attachment_path'] = $attachmentPaths[0];
+            }
+        }
+
+        $protocol->update($protocolData);
+
+        $participantIds = collect($validated['participant_ids'] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $allowedParticipantIds = Member::forCurrentTenant()
+            ->whereIn('id', $participantIds)
+            ->pluck('id')
+            ->all();
+
+        $protocol->participants()->sync($allowedParticipantIds);
+
+        return redirect()
+            ->route('protocols.index')
+            ->with('success', 'Protokoll erfolgreich aktualisiert.');
     }
 
     public function sendEmail(Protocol $protocol)
@@ -138,7 +244,7 @@ class ProtocolController extends Controller
         }
 
         $validated = $request->validate([
-            'emails' => 'required|array',
+            'emails'   => 'required|array',
             'emails.*' => 'email',
         ]);
 
@@ -146,6 +252,8 @@ class ProtocolController extends Controller
             Mail::to($email)->send(new ProtocolMail($protocol));
         }
 
-        return redirect()->route('protocols.index')->with('success', 'Protokoll wurde an die ausgewählten Empfänger gesendet.');
+        return redirect()
+            ->route('protocols.index')
+            ->with('success', 'Protokoll wurde an die ausgewählten Empfänger gesendet.');
     }
 }

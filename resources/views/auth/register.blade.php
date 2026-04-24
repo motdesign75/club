@@ -1,79 +1,96 @@
 <x-guest-layout>
-    <div class="min-h-screen flex flex-col justify-center items-center bg-gray-50 px-4 py-12">
 
-        {{-- Logo --}}
-        <div class="mb-8">
-            <img src="{{ asset('images/clubano-logo.svg') }}" alt="Clubano Logo" class="h-16 w-auto mx-auto">
-        </div>
+    <div class="space-y-6">
 
-        {{-- Formularbox --}}
-        <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg space-y-6 ring-1 ring-gray-200">
-
-            <h1 class="text-2xl font-extrabold text-center text-gray-900">Account anlegen</h1>
-            <p class="text-sm text-gray-600 text-center">
-                Legen Sie hier mit Ihrer E-Mail-Adresse und Ihrem Passwort einen Account an
-            </p>
-
-            <form method="POST" action="{{ route('register') }}" class="space-y-5">
-                @csrf
-
-                {{-- Name --}}
-                <div>
-                    <input id="name" name="name" type="text" required autofocus autocomplete="name"
-                        value="{{ old('name') }}"
-                        placeholder="Name"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#2954A3] focus:outline-none" />
-                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                </div>
-
-                {{-- E-Mail --}}
-                <div>
-                    <input id="email" name="email" type="email" required autocomplete="username"
-                        value="{{ old('email') }}"
-                        placeholder="E-Mail-Adresse"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#2954A3] focus:outline-none" />
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
-                </div>
-
-                {{-- Passwort --}}
-                <div>
-                    <input id="password" name="password" type="password" required autocomplete="new-password"
-                        placeholder="Passwort"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#2954A3] focus:outline-none" />
-                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                </div>
-
-                {{-- Passwort bestätigen --}}
-                <div>
-                    <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
-                        placeholder="Passwort bestätigen"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#2954A3] focus:outline-none" />
-                    <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-                </div>
-
-                {{-- AGB-Checkbox --}}
-                <div class="flex items-start space-x-2 text-sm text-gray-600">
-                    <input id="terms" type="checkbox" required class="mt-1 border-gray-300 rounded">
-                    <label for="terms">
-                        Hiermit erkläre ich, dass ich die
-                        <a href="#" class="text-blue-600 hover:underline">Allgemeinen Geschäftsbedingungen</a>
-                        gelesen habe und damit einverstanden bin. Informationen zur Verarbeitung meiner personenbezogenen Daten kann ich der
-                        <a href="#" class="text-blue-600 hover:underline">Datenschutzerklärung</a> entnehmen.
-                    </label>
-                </div>
-
-                {{-- Button --}}
-                <button type="submit"
-                    class="w-full bg-[#2954A3] hover:bg-[#1E3F7F] text-white font-semibold py-3 rounded-xl transition">
-                    Weiter
-                </button>
-            </form>
-
-            {{-- Link zum Login --}}
-            <p class="text-sm text-center text-gray-700">
-                Sie haben bereits einen Account?
-                <a href="{{ route('login') }}" class="text-blue-600 hover:underline">Einloggen</a>
+        <!-- Headline -->
+        <div class="text-center">
+            <h1 class="text-2xl font-bold text-gray-900">
+                Account anlegen
+            </h1>
+            <p class="mt-2 text-sm text-gray-500">
+                Erstellen Sie Ihren Clubano-Zugang für Ihren Verein
             </p>
         </div>
+
+        <!-- Form -->
+        <form method="POST" action="{{ route('register') }}" class="space-y-5">
+            @csrf
+
+            <!-- Name -->
+            <div class="space-y-1">
+                <label for="name" class="text-xs font-medium text-gray-500">
+                    Name
+                </label>
+                <input id="name" name="name" type="text" required autofocus
+                    value="{{ old('name') }}"
+                    placeholder="Max Mustermann"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm" />
+                <x-input-error :messages="$errors->get('name')" class="mt-1 text-xs" />
+            </div>
+
+            <!-- E-Mail -->
+            <div class="space-y-1">
+                <label for="email" class="text-xs font-medium text-gray-500">
+                    E-Mail-Adresse
+                </label>
+                <input id="email" name="email" type="email" required
+                    value="{{ old('email') }}"
+                    placeholder="z. B. vorstand@verein.de"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm" />
+                <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs" />
+            </div>
+
+            <!-- Passwort -->
+            <div class="space-y-1">
+                <label for="password" class="text-xs font-medium text-gray-500">
+                    Passwort
+                </label>
+                <input id="password" name="password" type="password" required
+                    placeholder="••••••••"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm" />
+                <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs" />
+            </div>
+
+            <!-- Passwort bestätigen -->
+            <div class="space-y-1">
+                <label for="password_confirmation" class="text-xs font-medium text-gray-500">
+                    Passwort bestätigen
+                </label>
+                <input id="password_confirmation" name="password_confirmation" type="password" required
+                    placeholder="••••••••"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm" />
+                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-xs" />
+            </div>
+
+            <!-- AGB -->
+            <div class="flex items-start space-x-2 text-xs text-gray-600">
+                <input id="terms" type="checkbox" required class="mt-1 border-gray-300 rounded">
+                <label for="terms">
+                    Ich akzeptiere die
+                    <a href="https://clubano.de/allgemeine-geschaeftsbedingungen/" class="text-blue-600 hover:underline">AGB</a>
+                    und habe die
+                    <a href="https://clubano.de/datenschutzerklaerung/" class="text-blue-600 hover:underline">Datenschutzerklärung</a>
+                    gelesen.
+                </label>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit"
+                class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-md transition transform hover:-translate-y-0.5">
+                Account erstellen
+            </button>
+
+        </form>
+
+        <!-- Login Link -->
+        <div class="text-center text-sm text-gray-500 pt-2">
+            Bereits registriert?
+            <a href="{{ route('login') }}"
+               class="text-blue-600 font-medium hover:underline">
+                Jetzt einloggen
+            </a>
+        </div>
+
     </div>
+
 </x-guest-layout>

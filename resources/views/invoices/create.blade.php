@@ -1,4 +1,6 @@
-<x-app-layout>
+@extends('layouts.app')
+
+@section('content')
     <x-slot name="header">
         <h2 class="text-xl font-semibold leading-tight">Neue Beitragsrechnung</h2>
     </x-slot>
@@ -150,4 +152,4 @@
             });
         });
     </script>
-</x-app-layout>
+@endsection

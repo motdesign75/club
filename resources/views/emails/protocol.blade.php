@@ -1,52 +1,62 @@
-@php
-    use Illuminate\Support\Str;
-@endphp
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Protokoll: {{ $protocol->title }}</title>
+    <title>Protokoll</title>
 </head>
-<body style="font-family: sans-serif; color: #333; line-height: 1.6;">
+<body style="font-family: Arial, sans-serif; color: #333;">
 
-    <h2 style="color: #2d3748;">📄 Protokoll: {{ $protocol->title }}</h2>
+    <h2>📋 {{ $protocol->title }}</h2>
 
     <p><strong>Typ:</strong> {{ $protocol->type }}</p>
-    <p><strong>Erstellt am:</strong> {{ $protocol->created_at->format('d.m.Y H:i') }}</p>
 
-    @if (!empty($protocol->location))
+    @if($protocol->location)
         <p><strong>Ort:</strong> {{ $protocol->location }}</p>
     @endif
 
-    @if (!empty($protocol->start_time))
-        <p><strong>Beginn:</strong> {{ \Carbon\Carbon::parse($protocol->start_time)->format('H:i') }} Uhr</p>
+    @if($protocol->start_time)
+        <p><strong>Beginn:</strong> {{ $protocol->start_time }}</p>
     @endif
 
-    @if (!empty($protocol->end_time))
-        <p><strong>Ende:</strong> {{ \Carbon\Carbon::parse($protocol->end_time)->format('H:i') }} Uhr</p>
-    @endif
-
-    @if (!empty($protocol->participants) && $protocol->participants->count())
-        <p><strong>Teilnehmer:</strong>
-            {{ $protocol->participants->map(fn($member) => trim($member->first_name . ' ' . $member->last_name))->join(', ') }}
-        </p>
-    @else
-        <p><strong>Teilnehmer:</strong> Keine Angaben</p>
+    @if($protocol->end_time)
+        <p><strong>Ende:</strong> {{ $protocol->end_time }}</p>
     @endif
 
     <hr>
 
-    <div style="white-space: pre-wrap;">
+    {{-- Teilnehmer --}}
+    @if($protocol->participants && $protocol->participants->count())
+        <h3>👥 Teilnehmer</h3>
+        <ul>
+            @foreach($protocol->participants as $member)
+                <li>{{ $member->full_name }}</li>
+            @endforeach
+        </ul>
+    @endif
+
+    {{-- Beschlüsse --}}
+    @if($protocol->resolutions)
+        <h3>📌 Beschlüsse / Ergebnisse</h3>
+        <p>{!! nl2br(e($protocol->resolutions)) !!}</p>
+    @endif
+
+    {{-- Nächstes Treffen --}}
+    @if($protocol->next_meeting)
+        <h3>📅 Nächstes Treffen</h3>
+        <p>{!! nl2br(e($protocol->next_meeting)) !!}</p>
+    @endif
+
+    {{-- Inhalt --}}
+    <h3>📝 Protokoll</h3>
+    <div>
         {!! $protocol->content !!}
     </div>
 
-    <hr>
-
-    <p style="font-size: 12px; color: #999;">
-        Dieses Protokoll wurde automatisch über <strong>Clubano.de</strong> generiert.<br>
-        Bitte bewahren Sie diese E-Mail ggf. für Ihre Unterlagen auf.
-    </p>
+    {{-- Hinweis zu Anhängen --}}
+    @if(!empty($protocol->attachments))
+        <hr>
+        <p><strong>📎 Anhänge:</strong> Diese E-Mail enthält {{ count($protocol->attachments) }} Datei(en) im Anhang.</p>
+    @endif
 
 </body>
 </html>

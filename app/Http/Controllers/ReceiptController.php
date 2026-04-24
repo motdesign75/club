@@ -3,23 +3,32 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ReceiptController extends Controller
 {
-    public function show($filename)
+    /**
+     * Zeigt einen Beleg im Browser an.
+     *
+     * @param string $path
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function show(string $path)
     {
-        // Sicherheitscheck: keine Pfadmanipulation erlauben
-        $filename = basename($filename);
+        // 🔒 Sicherheit: keine relativen Pfade erlauben
+        if (str_contains($path, '..')) {
+            abort(403, 'Ungültiger Pfad.');
+        }
 
-        // Absoluter Pfad im Dateisystem
-        $storagePath = storage_path('app/public/receipts/' . $filename);
+        // 🔥 WICHTIG: kompletter Pfad aus Route verwenden
+        $storagePath = storage_path('app/public/' . $path);
 
-        // Prüfen, ob Datei wirklich existiert
+        // Datei prüfen
         if (!file_exists($storagePath)) {
             abort(404, 'Beleg nicht gefunden.');
         }
 
-        // Datei anzeigen (Inline im Browser)
+        // MIME-Type automatisch erkennen
         return response()->file($storagePath);
     }
 }

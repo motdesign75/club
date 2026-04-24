@@ -12,14 +12,31 @@ class Invoice extends Model
     protected $fillable = [
         'tenant_id',
         'member_id',
+
         'invoice_number',
         'invoice_date',
+        'due_date',
+
+        'period_year',
+        'period_from',
+        'period_to',
+
         'status',
-        'discount',     // Rabatt in Prozent (optional)
-        'tax_rate',     // Steuer in Prozent (optional)
+        'paid_at',
+
+        'discount',
+        'tax_rate',
+
+        'total',
     ];
 
-    // Beziehungen
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relations
+    |--------------------------------------------------------------------------
+    */
+
     public function member()
     {
         return $this->belongsTo(Member::class);
@@ -35,7 +52,18 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
-    // Rechnungsnummer automatisch aus Nummernkreis generieren
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Nummernkreis
+    |--------------------------------------------------------------------------
+    */
+
     public static function generateInvoiceNumber(): string
     {
         $tenantId = auth()->user()->tenant_id;
@@ -44,8 +72,9 @@ class Invoice extends Model
             ->where('type', 'beitrag')
             ->first();
 
+        // ✅ Fallback wenn kein Nummernkreis vorhanden
         if (!$range) {
-            throw new \Exception("Kein Nummernkreis vom Typ 'beitrag' vorhanden.");
+            return 'R-' . now()->format('YmdHis');
         }
 
         $range->current_number++;
@@ -56,7 +85,13 @@ class Invoice extends Model
             $range->suffix;
     }
 
-    // Zwischensumme (Summe aller Positionen ohne Rabatt/USt.)
+
+    /*
+    |--------------------------------------------------------------------------
+    | Berechnungen
+    |--------------------------------------------------------------------------
+    */
+
     public function getSubtotal(): float
     {
         return $this->items->sum(function ($item) {
@@ -64,29 +99,79 @@ class Invoice extends Model
         });
     }
 
-    // Rabattbetrag in €
+
     public function getDiscountAmount(): float
     {
         $discount = $this->discount ?? 0;
-        return round(($this->getSubtotal() * $discount) / 100, 2);
+
+        return round(
+            ($this->getSubtotal() * $discount) / 100,
+            2
+        );
     }
 
-    // Nettobetrag nach Abzug des Rabatts
+
     public function getNetTotal(): float
     {
-        return round($this->getSubtotal() - $this->getDiscountAmount(), 2);
+        return round(
+            $this->getSubtotal() - $this->getDiscountAmount(),
+            2
+        );
     }
 
-    // Steuerbetrag in €
+
     public function getTaxAmount(): float
     {
         $tax = $this->tax_rate ?? 0;
-        return round(($this->getNetTotal() * $tax) / 100, 2);
+
+        return round(
+            ($this->getNetTotal() * $tax) / 100,
+            2
+        );
     }
 
-    // Gesamtsumme (Netto + USt.)
+
     public function getTotal(): float
     {
-        return round($this->getNetTotal() + $this->getTaxAmount(), 2);
+        return round(
+            $this->getNetTotal() + $this->getTaxAmount(),
+            2
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status Helper
+    |--------------------------------------------------------------------------
+    */
+
+    public function isPaid(): bool
+    {
+        return $this->status === 'paid';
+    }
+
+    public function isOpen(): bool
+    {
+        return $this->status === 'open';
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === 'entwurf';
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Zahlung setzen
+    |--------------------------------------------------------------------------
+    */
+
+    public function markAsPaid()
+    {
+        $this->status = 'paid';
+        $this->paid_at = now();
+        $this->save();
     }
 }

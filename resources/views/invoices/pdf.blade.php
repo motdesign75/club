@@ -1,283 +1,285 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Rechnung {{ $invoice->invoice_number }}</title>
-    <style>
-        @page {
-            margin: 2.5cm 2cm 2.5cm 2cm;
-        }
+<meta charset="UTF-8">
+<title>Rechnung {{ $invoice->invoice_number }}</title>
 
-        body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 11pt;
-            color: #111;
-        }
+<style>
+@page {
+    margin: 25mm 20mm 20mm 20mm;
+}
 
-        .header, .footer {
-            position: fixed;
-            left: 0;
-            right: 0;
-            width: 100%;
-        }
+body {
+    font-family: DejaVu Sans, sans-serif;
+    font-size: 10pt;
+    color: #000;
+}
 
-        .header {
-            top: -2.2cm;
-        }
+/* ================= HEADER ================= */
 
-        .footer {
-            bottom: -2.2cm;
-            font-size: 8pt;
-            color: #666;
-        }
+.header {
+    margin-bottom: 20mm;
+}
 
-        .footer-table {
-            width: 100%;
-            border-top: 1px solid #999;
-            padding-top: 5px;
-        }
+.logo {
+    height: 50px;
+}
 
-        .address-block {
-            margin-top: 4.5cm;
-            margin-bottom: 2cm;
-        }
+/* ================= ADDRESS ================= */
 
-        .right { text-align: right; }
-        .left { text-align: left; }
-        .center { text-align: center; }
-        .bold { font-weight: bold; }
+.address-block {
+    position: absolute;
+    top: 65mm;
+    left: 20mm;
+    width: 85mm;
+}
 
-        .invoice-title {
-            font-size: 16pt;
-            font-weight: bold;
-            margin-top: 0.5cm;
-            margin-bottom: 1.5cm;
-        }
+.sender-line {
+    font-size: 6pt;
+    color: #666;
+    margin-bottom: 2mm;
+	text-decoration:underline;
+}
 
-        .details-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1.5cm;
-        }
+/* ================= INFO ================= */
 
-        .details-table th,
-        .details-table td {
-            border: 1px solid #ccc;
-            padding: 6px 10px;
-        }
+.info-block {
+    position: absolute;
+    top: 50mm;
+    right: 20mm;
+    width: 60mm;
+    text-align: right;
+}
 
-        .details-table th {
-            background-color: #f5f5f5;
-        }
+/* ================= CONTENT ================= */
 
-        .summary-table {
-            width: 100%;
-            margin-top: 1cm;
-        }
+.content {
+    margin-top: 85mm; /* WICHTIG: verhindert Überlagerung */
+}
 
-        .summary-table td {
-            padding: 4px;
-        }
+/* Titel */
+.invoice-title {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-bottom: 8mm;
+}
 
-        .summary-table .label {
-            text-align: right;
-            width: 80%;
-        }
+/* Tabelle */
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-        .summary-table .value {
-            text-align: right;
-            width: 20%;
-        }
+.details-table th {
+    border-bottom: 1.5px solid #000;
+    padding: 6px;
+    font-size: 9pt;
+    text-align: left;
+}
 
-        .signature {
-            margin-top: 2cm;
-        }
+.details-table td {
+    border-bottom: 0.5px solid #ccc;
+    padding: 5px;
+    font-size: 9pt;
+}
 
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: auto;
-            z-index: -1;
-        }
+/* Summen */
+.summary {
+    width: 100%;
+    margin-top: 8mm;
+}
 
-        .logo {
-            max-height: 80px;
-        }
-    </style>
+.summary td {
+    padding: 3px;
+}
+
+.summary .label {
+    text-align: right;
+}
+
+.summary .value {
+    text-align: right;
+    width: 35mm;
+}
+
+.total {
+    border-top: 1.5px solid #000;
+    font-weight: bold;
+    font-size: 11pt;
+}
+
+/* ================= FOOTER ================= */
+
+.footer {
+    position: fixed;
+    bottom: 10mm;
+    left: 20mm;
+    right: 20mm;
+    font-size: 7pt;
+    color: #444;
+}
+
+.footer-line {
+    border-top: 0.5px solid #999;
+    margin-bottom: 2mm;
+}
+
+.footer table {
+    width: 100%;
+}
+
+.footer td {
+    vertical-align: top;
+}
+
+/* ================= HELPERS ================= */
+
+.right { text-align: right; }
+.center { text-align: center; }
+
+</style>
 </head>
-<body>
-@php
-    $tenant = $invoice->member->tenant;
-    $member = $invoice->member;
-    $positions = $invoice->items ?? collect();
-    $discount = $invoice->discount ?? 0;
-    $taxRate = $invoice->tax_rate ?? 0;
-    $net = $positions->sum(fn($item) => $item->quantity * $item->unit_price);
-    $discountAmount = $net * ($discount / 100);
-    $netAfterDiscount = $net - $discountAmount;
-    $taxAmount = $netAfterDiscount * ($taxRate / 100);
-    $total = $netAfterDiscount + $taxAmount;
 
-    // Anrede individuell behandeln
-    switch($member->anrede) {
-        case 'Herr':
-            $anrede = 'Sehr geehrter Herr ' . $member->last_name;
-            break;
-        case 'Frau':
-            $anrede = 'Sehr geehrte Frau ' . $member->last_name;
-            break;
-        case 'Divers':
-            $anrede = 'Guten Tag ' . $member->first_name . ' ' . $member->last_name;
-            break;
-        case 'Lieber':
-        case 'Liebe':
-            $anrede = $member->anrede . ' ' . $member->first_name;
-            break;
-        default:
-            $anrede = 'Sehr geehrte Damen und Herren';
-    }
+<body>
+
+@php
+$tenant = $invoice->member->tenant;
+$member = $invoice->member;
+$positions = $invoice->items ?? collect();
+
+$discount = $invoice->discount ?? 0;
+$taxRate = $invoice->tax_rate ?? 0;
+
+$net = $positions->sum(fn($i) => $i->quantity * $i->unit_price);
+$discountAmount = $net * ($discount / 100);
+$netAfterDiscount = $net - $discountAmount;
+$taxAmount = $netAfterDiscount * ($taxRate / 100);
+$total = $netAfterDiscount + $taxAmount;
 @endphp
 
-{{-- Briefpapier als Bild – auf allen Seiten --}}
-@if($tenant->use_letterhead && $tenant->pdf_template)
-    @php
-        $ext = pathinfo($tenant->pdf_template, PATHINFO_EXTENSION);
-    @endphp
-    @if(in_array(strtolower($ext), ['jpg', 'jpeg', 'png']))
-        <img src="{{ storage_path('app/public/' . $tenant->pdf_template) }}" class="background">
-    @endif
-@endif
-
-{{-- Header (wenn kein Briefbogen verwendet wird) --}}
-@unless($tenant->use_letterhead)
+{{-- ================= HEADER ================= --}}
 <div class="header">
     <table width="100%">
         <tr>
-            <td style="width: 60%;">
-                @if($tenant->logo && file_exists(storage_path('app/public/' . $tenant->logo)))
-                    <img src="{{ storage_path('app/public/' . $tenant->logo) }}" class="logo"><br>
-                @endif
-            </td>
-            <td class="right" style="width: 40%;">
+            <td>
                 <strong>{{ $tenant->name }}</strong><br>
                 {{ $tenant->address }}<br>
-                {{ $tenant->zip }} {{ $tenant->city }}<br>
-                Tel: {{ $tenant->phone ?? '–' }}<br>
-                E-Mail: {{ $tenant->email }}
+                {{ $tenant->zip }} {{ $tenant->city }}
+            </td>
+            <td class="right">
+                @if($tenant->logo && file_exists(storage_path('app/public/' . $tenant->logo)))
+                    <img src="{{ storage_path('app/public/' . $tenant->logo) }}" class="logo">
+                @endif
             </td>
         </tr>
     </table>
 </div>
-@endunless
 
-{{-- Footer (wenn kein Briefbogen verwendet wird) --}}
-@unless($tenant->use_letterhead)
-<div class="footer">
-    <table class="footer-table">
-        <tr>
-            <td style="width: 33%; text-align: left;">
-                <strong>IBAN:</strong> {{ $tenant->iban ?? '—' }}<br>
-                <strong>BIC:</strong> {{ $tenant->bic ?? '—' }}<br>
-                <strong>Bank:</strong> {{ $tenant->bank_name ?? '—' }}
-            </td>
-            <td style="width: 33%; text-align: center;">
-                {{ $tenant->name }}<br>
-                Register-Nr.: {{ $tenant->register_number ?? '—' }}<br>
-                Vorsitz: {{ $tenant->chairman_name ?? '—' }}
-            </td>
-            <td style="width: 33%; text-align: right;">
-                {{ $tenant->address }}<br>
-                {{ $tenant->zip }} {{ $tenant->city }}<br>
-                Tel: {{ $tenant->phone ?? '—' }}<br>
-                E-Mail: {{ $tenant->email }}
-            </td>
-        </tr>
-    </table>
-</div>
-@endunless
-
-{{-- Empfängeradresse --}}
+{{-- ================= ADDRESS ================= --}}
 <div class="address-block">
+    <div class="sender-line">
+        {{ $tenant->name }} · {{ $tenant->address }} · {{ $tenant->zip }} {{ $tenant->city }}
+    </div>
+
     {{ $member->anrede }} {{ $member->first_name }} {{ $member->last_name }}<br>
     {{ $member->street }}<br>
     {{ $member->zip }} {{ $member->city }}
 </div>
 
-{{-- Ort & Datum --}}
-<div class="right">
-    {{ $tenant->city ?? 'Ort' }}, {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d.m.Y') }}
+{{-- ================= INFO ================= --}}
+<div class="info-block">
+    Rechnung: {{ $invoice->invoice_number }}<br>
+    Datum: {{ \Carbon\Carbon::parse($invoice->invoice_date)->format('d.m.Y') }}<br>
+    Kunde: {{ $member->member_id ?? '-' }}
 </div>
 
-{{-- Titel --}}
+{{-- ================= CONTENT ================= --}}
+<div class="content">
+
 <div class="invoice-title">
-    Rechnung Nr. {{ $invoice->invoice_number }}
+    Rechnung {{ $invoice->invoice_number }}
 </div>
 
-{{-- Personalisierte Anrede --}}
-<p>{{ $anrede }},</p>
-<p>für Ihre Mitgliedschaft und Leistungen stellen wir Ihnen folgende Positionen in Rechnung:</p>
+<p>Sehr geehrte Damen und Herren,</p>
 
-{{-- Tabelle mit Positionen --}}
+<p>
+vielen Dank für Ihre Mitgliedschaft. Wir stellen Ihnen folgende Leistungen in Rechnung:
+</p>
+
 <table class="details-table">
-    <thead>
-        <tr>
-            <th>Pos.</th>
-            <th>Beschreibung</th>
-            <th class="right">Menge</th>
-            <th>Einheit</th>
-            <th class="right">Einzelpreis</th>
-            <th class="right">Gesamt</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($positions as $i => $item)
-        <tr>
-            <td>{{ $i + 1 }}</td>
-            <td>{{ $item->description }}</td>
-            <td class="right">{{ $item->quantity }}</td>
-            <td>{{ $item->unit ?? 'Stück' }}</td>
-            <td class="right">{{ number_format($item->unit_price, 2, ',', '.') }} €</td>
-            <td class="right">{{ number_format($item->quantity * $item->unit_price, 2, ',', '.') }} €</td>
-        </tr>
-        @endforeach
-    </tbody>
+<thead>
+<tr>
+<th style="width:10%">Pos.</th>
+<th>Beschreibung</th>
+<th style="width:15%" class="right">Menge</th>
+<th style="width:20%" class="right">Preis</th>
+<th style="width:20%" class="right">Summe</th>
+</tr>
+</thead>
+<tbody>
+@foreach($positions as $i => $item)
+<tr>
+<td>{{ $i+1 }}</td>
+<td>{{ $item->description }}</td>
+<td class="right">{{ number_format($item->quantity,2,',','.') }}</td>
+<td class="right">{{ number_format($item->unit_price,2,',','.') }} €</td>
+<td class="right">{{ number_format($item->quantity * $item->unit_price,2,',','.') }} €</td>
+</tr>
+@endforeach
+</tbody>
 </table>
 
-{{-- Zusammenfassung --}}
-<table class="summary-table">
-    <tr>
-        <td class="label">Zwischensumme (Netto):</td>
-        <td class="value">{{ number_format($net, 2, ',', '.') }} €</td>
-    </tr>
-    @if($discount > 0)
-    <tr>
-        <td class="label">Rabatt ({{ $discount }} %):</td>
-        <td class="value">– {{ number_format($discountAmount, 2, ',', '.') }} €</td>
-    </tr>
-    @endif
-    <tr>
-        <td class="label">Nettobetrag:</td>
-        <td class="value">{{ number_format($netAfterDiscount, 2, ',', '.') }} €</td>
-    </tr>
-    <tr>
-        <td class="label">USt. ({{ $taxRate }} %):</td>
-        <td class="value">{{ number_format($taxAmount, 2, ',', '.') }} €</td>
-    </tr>
-    <tr>
-        <td class="label bold">Gesamtbetrag (Brutto):</td>
-        <td class="value bold">{{ number_format($total, 2, ',', '.') }} €</td>
-    </tr>
+<table class="summary">
+<tr>
+<td class="label">Netto:</td>
+<td class="value">{{ number_format($netAfterDiscount,2,',','.') }} €</td>
+</tr>
+<tr>
+<td class="label">USt ({{ $taxRate }}%):</td>
+<td class="value">{{ number_format($taxAmount,2,',','.') }} €</td>
+</tr>
+<tr class="total">
+<td class="label">Gesamt:</td>
+<td class="value">{{ number_format($total,2,',','.') }} €</td>
+</tr>
 </table>
 
-{{-- Zahlungsziel --}}
-<p style="margin-top: 1cm;">Bitte überweisen Sie den Betrag innerhalb von 14 Tagen auf das oben genannte Konto.</p>
+<p style="margin-top:10mm;">
+Bitte überweisen Sie den Betrag innerhalb von 14 Tagen.
+</p>
 
-{{-- Grußformel --}}
-<div class="signature">
-    Mit freundlichen Grüßen<br><br>
-    {{ $tenant->name }}
+<p style="margin-top:15mm;">
+Mit freundlichen Grüßen<br><br>
+{{ $tenant->name }}
+</p>
+
+</div>
+
+{{-- ================= FOOTER ================= --}}
+<div class="footer">
+
+<div class="footer-line"></div>
+
+<table>
+<tr>
+<td style="width:33%;">
+{{ $tenant->name }}<br>
+{{ $tenant->address }}<br>
+{{ $tenant->zip }} {{ $tenant->city }}
+</td>
+
+<td style="width:33%;" class="left">
+IBAN: {{ $tenant->iban ?? '—' }}<br>
+BIC: {{ $tenant->bic ?? '—' }}
+</td>
+
+<td style="width:33%;" class="right">
+{{ $tenant->email }}<br>
+{{ $tenant->phone ?? '' }}
+</td>
+</tr>
+</table>
+
 </div>
 
 </body>

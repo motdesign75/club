@@ -2,9 +2,9 @@
 
 namespace App\Livewire;
 
+use Livewire\Component;
 use App\Models\Member;
-use Illuminate\Support\Carbon;
-use livewire\Component;
+use Carbon\Carbon;
 
 class DashboardMemberChart extends Component
 {
@@ -16,43 +16,52 @@ class DashboardMemberChart extends Component
     public function mount()
     {
         $tenantId = auth()->user()->tenant_id;
-        $year = now()->year;
 
-        $this->months = collect(range(1, 12))->map(function ($m) {
-            return Carbon::create(null, $m)->translatedFormat('F');
-        })->toArray();
+        $start = now()->copy()->subMonths(11)->startOfMonth();
+        $end = now()->copy()->endOfMonth();
 
-        $this->entries = [];
-        $this->exits = [];
-        $this->totalMembers = [];
+        for ($i = 0; $i < 12; $i++) {
 
-        // Startdatum für Berechnung
-        $startOfYear = Carbon::create($year, 1, 1);
+            $date = $start->copy()->addMonths($i);
 
-        // Mitglieder, die bereits zum Jahresbeginn aktiv waren
-        $runningTotal = Member::where('tenant_id', $tenantId)
-            ->whereDate('entry_date', '<', $startOfYear)
-            ->where(function ($query) use ($startOfYear) {
-                $query->whereNull('exit_date')->orWhere('exit_date', '>=', $startOfYear);
-            })
-            ->count();
+            $monthStart = $date->copy()->startOfMonth();
+            $monthEnd   = $date->copy()->endOfMonth();
 
-        foreach (range(1, 12) as $month) {
-            $eintritte = Member::where('tenant_id', $tenantId)
-                ->whereYear('entry_date', $year)
-                ->whereMonth('entry_date', $month)
+            $this->months[] = $date->format('M y');
+
+
+            // ✅ Eintritte nur in diesem Monat
+
+            $entries = Member::where('tenant_id', $tenantId)
+                ->whereNotNull('entry_date')
+                ->whereBetween('entry_date', [$monthStart, $monthEnd])
                 ->count();
 
-            $austritte = Member::where('tenant_id', $tenantId)
-                ->whereYear('exit_date', $year)
-                ->whereMonth('exit_date', $month)
+            $this->entries[] = $entries;
+
+
+            // ✅ Austritte nur in diesem Monat
+
+            $exits = Member::where('tenant_id', $tenantId)
+                ->whereNotNull('exit_date')
+                ->whereBetween('exit_date', [$monthStart, $monthEnd])
                 ->count();
 
-            $runningTotal += $eintritte - $austritte;
+            $this->exits[] = $exits;
 
-            $this->entries[] = $eintritte;
-            $this->exits[] = $austritte;
-            $this->totalMembers[] = $runningTotal;
+
+            // ✅ Mitgliederbestand bis Monatsende
+
+            $total = Member::where('tenant_id', $tenantId)
+                ->whereNotNull('entry_date')
+                ->whereDate('entry_date', '<=', $monthEnd)
+                ->where(function ($q) use ($monthEnd) {
+                    $q->whereNull('exit_date')
+                      ->orWhere('exit_date', '>', $monthEnd);
+                })
+                ->count();
+
+            $this->totalMembers[] = $total;
         }
     }
 

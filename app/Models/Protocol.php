@@ -10,7 +10,7 @@ class Protocol extends Model
     use HasFactory;
 
     /**
-     * Die Felder, die massenweise befüllbar sind.
+     * Mass assignable Felder
      */
     protected $fillable = [
         'tenant_id',
@@ -21,6 +21,18 @@ class Protocol extends Model
         'start_time',
         'end_time',
         'content',
+
+        // 🔥 NEU
+        'resolutions',
+        'next_meeting',
+        'attachments', // JSON Feld
+    ];
+
+    /**
+     * Casts (wichtig für JSON!)
+     */
+    protected $casts = [
+        'attachments' => 'array',
     ];
 
     /**
@@ -32,7 +44,7 @@ class Protocol extends Model
     }
 
     /**
-     * Ersteller des Protokolls (z. B. Vorstandsmitglied)
+     * Ersteller des Protokolls
      */
     public function user()
     {
@@ -40,11 +52,35 @@ class Protocol extends Model
     }
 
     /**
-     * Teilnehmer des Protokolls (Mitglieder)
+     * Teilnehmer des Protokolls
      */
     public function participants()
     {
         return $this->belongsToMany(Member::class, 'protocol_member')
             ->withTimestamps();
+    }
+
+    /**
+     * 🔥 OPTIONAL (sehr sinnvoll):
+     * Prüft ob Protokoll Anhänge hat
+     */
+    public function hasAttachments(): bool
+    {
+        return !empty($this->attachments);
+    }
+
+    /**
+     * 🔥 OPTIONAL:
+     * Gibt alle Attachment-URLs zurück
+     */
+    public function getAttachmentUrls(): array
+    {
+        if (!$this->attachments) {
+            return [];
+        }
+
+        return collect($this->attachments)
+            ->map(fn($file) => asset('storage/' . $file))
+            ->toArray();
     }
 }

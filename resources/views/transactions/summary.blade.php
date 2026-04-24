@@ -3,139 +3,145 @@
 @section('title', 'Einnahmen & Ausgaben')
 
 @section('content')
-<div class="max-w-6xl mx-auto space-y-10">
-    <h1 class="text-3xl font-bold text-gray-800">📊 Einnahmen & Ausgaben</h1>
 
-    {{-- Übersichtskarten --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div class="bg-gradient-to-br from-green-100 to-green-200 text-green-900 rounded-xl shadow-lg p-6">
-            <div class="flex items-center justify-between">
-                <div class="text-3xl">💰</div>
-                <div class="text-right">
-                    <p class="text-sm font-medium">Gesamte Einnahmen</p>
-                    <p class="text-2xl font-bold">{{ number_format($summary['total_income'], 2, ',', '.') }} €</p>
-                </div>
+<div class="max-w-7xl mx-auto space-y-6">
+
+    {{-- HEADER --}}
+    <div class="flex items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-[#2954A3]">
+                Einnahmen & Ausgaben
+            </h1>
+
+            <p class="text-sm text-gray-500">
+                Finanzübersicht mit Buchungsliste
+            </p>
+        </div>
+    </div>
+
+    {{-- SUMMARY CARDS --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        {{-- Einnahmen --}}
+        <div class="bg-green-600 text-white rounded-xl shadow p-6">
+            <div class="text-sm opacity-80">Einnahmen gesamt</div>
+            <div class="text-3xl font-bold mt-2">
+                {{ number_format($totalIncome ?? 0, 2, ',', '.') }} €
             </div>
         </div>
-        <div class="bg-gradient-to-br from-red-100 to-red-200 text-red-900 rounded-xl shadow-lg p-6">
-            <div class="flex items-center justify-between">
-                <div class="text-3xl">💸</div>
-                <div class="text-right">
-                    <p class="text-sm font-medium">Gesamte Ausgaben</p>
-                    <p class="text-2xl font-bold">{{ number_format($summary['total_expense'], 2, ',', '.') }} €</p>
-                </div>
+
+        {{-- Ausgaben --}}
+        <div class="bg-red-600 text-white rounded-xl shadow p-6">
+            <div class="text-sm opacity-80">Ausgaben gesamt</div>
+            <div class="text-3xl font-bold mt-2">
+                {{ number_format($totalExpense ?? 0, 2, ',', '.') }} €
             </div>
         </div>
-        <div class="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-900 rounded-xl shadow-lg p-6">
-            <div class="flex flex-col gap-2">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium">Saldo gesamt</span>
-                    <span class="text-2xl font-bold">{{ number_format($summary['saldo'], 2, ',', '.') }} €</span>
-                </div>
-                <div class="text-sm text-gray-800">
-                    📅 Aktueller Monat: <strong>{{ number_format($summary['current']['saldo'], 2, ',', '.') }} €</strong><br>
-                    📆 Vormonat: <strong>{{ number_format($summary['previous']['saldo'], 2, ',', '.') }} €</strong><br>
-                    🔁 Veränderung:
+
+        {{-- Saldo --}}
+        <div class="bg-[#2954A3] text-white rounded-xl shadow p-6">
+            <div class="text-sm opacity-80">Saldo gesamt</div>
+            <div class="text-3xl font-bold mt-2">
+                {{ number_format($saldo ?? 0, 2, ',', '.') }} €
+            </div>
+
+            <div class="text-sm mt-3 opacity-80">
+                Vergleich zum Vormonat derzeit nicht verfügbar
+            </div>
+        </div>
+
+    </div>
+
+    {{-- ZEITRAUM --}}
+    <div class="text-sm text-gray-600">
+        Zeitraum:
+        <strong>{{ \Carbon\Carbon::parse($start)->format('d.m.Y') }}</strong>
+        –
+        <strong>{{ \Carbon\Carbon::parse($end)->format('d.m.Y') }}</strong>
+    </div>
+
+    {{-- TABLE --}}
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+
+        <div class="p-4 border-b">
+            <h2 class="font-semibold text-gray-800">
+                Buchungen im Zeitraum
+            </h2>
+        </div>
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full text-sm">
+
+                <thead class="bg-gray-100 text-gray-600 text-xs uppercase">
+                    <tr>
+                        <th class="p-3 text-left">Datum</th>
+                        <th class="p-3 text-left">Beschreibung</th>
+                        <th class="p-3">Von</th>
+                        <th class="p-3">Nach</th>
+                        <th class="p-3 text-right">Betrag</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                @forelse($transactions as $transaction)
+
                     @php
-                        $diff = $summary['current']['saldo'] - $summary['previous']['saldo'];
-                        $symbol = $diff > 0 ? '⬆️' : ($diff < 0 ? '⬇️' : '➡️');
-                        $color = $diff > 0 ? 'text-green-700' : ($diff < 0 ? 'text-red-700' : 'text-gray-700');
+                        $amount = $transaction->amount;
+                        $class = 'text-gray-800';
+                        $prefix = '';
+
+                        if (optional($transaction->account_from)->type === 'einnahme') {
+                            $class = 'text-green-600 font-semibold';
+                        } elseif (optional($transaction->account_to)->type === 'ausgabe') {
+                            $class = 'text-red-600 font-semibold';
+                            $prefix = '-';
+                        } elseif (str_starts_with($transaction->description, 'Storno:')) {
+                            $class = 'text-gray-500';
+                        }
                     @endphp
-                    <span class="{{ $color }}">
-                        {{ $symbol }} {{ number_format($diff, 2, ',', '.') }} €
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    {{-- Zeitraum --}}
-    <p class="text-sm text-gray-500 mt-2">
-        Zeitraum: {{ \Carbon\Carbon::parse($start)->format('d.m.Y') }} – {{ \Carbon\Carbon::parse($end)->format('d.m.Y') }}
-    </p>
-
-    {{-- Diagramm --}}
-    <div class="bg-white rounded-xl shadow-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">📊 Monatsvergleich als Diagramm</h2>
-        <canvas id="finanzChart" height="120"></canvas>
-    </div>
-
-    {{-- Buchungstabelle --}}
-    <div class="bg-white rounded-xl shadow-lg p-6">
-        <h2 class="text-lg font-semibold text-gray-800 mb-4">📋 Einzelne Buchungen</h2>
-        <table class="w-full text-sm border border-gray-200 rounded">
-            <thead class="bg-gray-100 text-gray-700">
-                <tr>
-                    <th class="px-4 py-2 text-left">Datum</th>
-                    <th class="px-4 py-2 text-left">Beschreibung</th>
-                    <th class="px-4 py-2 text-left">Von</th>
-                    <th class="px-4 py-2 text-left">Nach</th>
-                    <th class="px-4 py-2 text-right">Betrag</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($summary['transactions'] as $transaction)
-                    <tr class="border-t border-gray-200">
-                        <td class="px-4 py-2">
+                    <tr class="border-t hover:bg-blue-50">
+                        <td class="p-3 font-mono">
                             {{ \Carbon\Carbon::parse($transaction->date)->format('d.m.Y') }}
                         </td>
-                        <td class="px-4 py-2">{{ $transaction->description }}</td>
-                        <td class="px-4 py-2">{{ $transaction->account_from->name ?? '—' }}</td>
-                        <td class="px-4 py-2">{{ $transaction->account_to->name ?? '—' }}</td>
-                        <td class="px-4 py-2 text-right">
-                            {{ number_format($transaction->amount, 2, ',', '.') }} €
+
+                        <td class="p-3">
+                            {{ $transaction->description }}
+                        </td>
+
+                        <td class="p-3">
+                            {{ $transaction->account_from->name ?? '-' }}
+                        </td>
+
+                        <td class="p-3">
+                            {{ $transaction->account_to->name ?? '-' }}
+                        </td>
+
+                        <td class="p-3 text-right font-mono {{ $class }}">
+                            {{ $prefix }}{{ number_format($amount, 2, ',', '.') }} €
                         </td>
                     </tr>
+
                 @empty
+
                     <tr>
-                        <td colspan="5" class="text-center text-gray-500 py-4">Keine Buchungen gefunden.</td>
+                        <td colspan="5" class="p-6 text-center text-gray-500">
+                            Keine Buchungen gefunden
+                        </td>
                     </tr>
+
                 @endforelse
-            </tbody>
-        </table>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
     </div>
+
 </div>
+
 @endsection
-
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('finanzChart').getContext('2d');
-
-    const finanzChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode(array_map(
-                fn($k) => \Carbon\Carbon::parse($k . '-01')->locale('de')->translatedFormat('M Y'),
-                array_keys($summary['by_month']->toArray())
-            )) !!},
-            datasets: [
-                {
-                    label: 'Einnahmen',
-                    backgroundColor: 'rgba(34, 197, 94, 0.7)',
-                    data: {!! json_encode($summary['by_month']->pluck('income')->values()) !!}
-                },
-                {
-                    label: 'Ausgaben',
-                    backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                    data: {!! json_encode($summary['by_month']->pluck('expense')->values()) !!}
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'top' }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: value => value + ' €'
-                    }
-                }
-            }
-        }
-    });
-</script>
-@endpush

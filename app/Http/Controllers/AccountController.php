@@ -7,9 +7,6 @@ use Illuminate\Http\Request;
 
 class AccountController extends Controller
 {
-    /**
-     * Zeigt die Kontenübersicht mit Tabs (bank/chart/inaktiv).
-     */
     public function index(Request $request)
     {
         $tab = $request->get('tab', 'bank');
@@ -34,19 +31,19 @@ class AccountController extends Controller
         return view('accounts.index', compact('balanceAccounts', 'chartAccounts', 'inactiveAccounts', 'tab'));
     }
 
-    /**
-     * Zeigt das Formular zum Erstellen eines neuen Kontos.
-     */
     public function create()
     {
         return view('accounts.create');
     }
 
-    /**
-     * Speichert ein neues Konto.
-     */
     public function store(Request $request)
     {
+        // Checkbox-Werte vorbereiten
+        $request->merge([
+            'active'   => $request->has('active'),
+            'online'   => $request->has('online'),
+        ]);
+
         $validated = $request->validate([
             'number'         => ['nullable', 'string', 'max:20'],
             'name'           => ['required', 'string', 'max:255'],
@@ -63,14 +60,19 @@ class AccountController extends Controller
 
         $validated['tenant_id'] = auth()->user()->tenant_id;
 
-        Account::create($validated);
+        $account = Account::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Konto erfolgreich erstellt.',
+                'account' => $account,
+            ]);
+        }
 
         return redirect()->route('accounts.index')->with('success', 'Konto erfolgreich erstellt.');
     }
 
-    /**
-     * Zeigt das Bearbeitungsformular für ein Konto.
-     */
     public function edit(Account $account)
     {
         $this->authorizeAccount($account);
@@ -78,12 +80,15 @@ class AccountController extends Controller
         return view('accounts.edit', compact('account'));
     }
 
-    /**
-     * Aktualisiert ein bestehendes Konto.
-     */
     public function update(Request $request, Account $account)
     {
         $this->authorizeAccount($account);
+
+        // Checkbox-Werte vorbereiten
+        $request->merge([
+            'active'   => $request->has('active'),
+            'online'   => $request->has('online'),
+        ]);
 
         $validated = $request->validate([
             'number'         => ['nullable', 'string', 'max:20'],
@@ -101,24 +106,25 @@ class AccountController extends Controller
 
         $account->update($validated);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Konto erfolgreich aktualisiert.',
+                'account' => $account,
+            ]);
+        }
+
         return redirect()->route('accounts.index')->with('success', 'Konto erfolgreich aktualisiert.');
     }
 
-    /**
-     * Löscht ein Konto.
-     */
     public function destroy(Account $account)
     {
         $this->authorizeAccount($account);
-
         $account->delete();
 
         return redirect()->route('accounts.index')->with('success', 'Konto gelöscht.');
     }
 
-    /**
-     * Prüft, ob der aktuelle Benutzer auf das Konto zugreifen darf.
-     */
     protected function authorizeAccount(Account $account)
     {
         if ((string) $account->tenant_id !== (string) auth()->user()->tenant_id) {

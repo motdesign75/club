@@ -11,7 +11,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+
+        // ✅ Stripe Webhooks dürfen nicht durch CSRF laufen (sonst 419)
+        $middleware->validateCsrfTokens(except: [
+            'stripe/webhook',
+            'stripe/*',
+        ]);
+
+        // ✅ Middleware-Aliases
+        $middleware->alias([
+            'member.limit' => \App\Http\Middleware\EnsureMemberLimitNotExceeded::class,
+
+            // 🔥 NEU: Paywall Middleware
+            'tenant.subscribed' => \App\Http\Middleware\EnsureTenantIsSubscribed::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -18,7 +18,10 @@ class MemberController extends Controller
 {
     public function __construct(
         protected MemberService $memberService
-    ) {}
+    ) {
+        // ✅ Hard-Limit: Neuanlage nur wenn Limit nicht erreicht
+        $this->middleware('member.limit')->only(['create', 'store']);
+    }
 
     public function index()
     {
@@ -141,6 +144,7 @@ class MemberController extends Controller
         }
 
         $member->delete();
+
         return redirect()->route('members.index')->with('success', 'Mitglied gelöscht.');
     }
 
@@ -149,6 +153,7 @@ class MemberController extends Controller
         $this->authorizeMember($member);
 
         $pdf = Pdf::loadView('members.pdf.datenauskunft', ['member' => $member]);
+
         return $pdf->download("Datenauskunft_{$member->last_name}_{$member->id}.pdf");
     }
 

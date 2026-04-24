@@ -2,7 +2,7 @@
     Clubano <span class="text-xs bg-yellow-200 text-yellow-900 px-2 py-0.5 rounded-full">beta</span>
 </div>
 <div class="p-6 border-b">
-    <h1 class="text-2xl font-bold text-indigo-700">🏛 Clubano beta</h1>
+    <h1 class="text-2xl font-bold text-indigo-700">🏛 Clubano<p>Deine Vereinsverwaltung/h1>
 </div>
 
 <nav class="flex-1 px-4 py-4 space-y-4 text-sm">

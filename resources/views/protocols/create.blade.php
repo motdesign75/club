@@ -11,25 +11,26 @@
 @endpush
 
 @section('content')
-<div class="max-w-4xl mx-auto bg-white p-6 shadow rounded">
-    <h2 class="text-xl font-semibold leading-tight mb-6">Neues Protokoll erstellen</h2>
+<div class="max-w-4xl mx-auto bg-gray-50 p-8 shadow-lg rounded-lg space-y-8">
+    <h2 class="text-2xl font-bold text-center text-gray-800">📋 Neues Protokoll erstellen</h2>
 
-    <form method="POST" action="{{ route('protocols.store') }}">
+    {{-- WICHTIG: enctype ergänzt --}}
+    <form method="POST" action="{{ route('protocols.store') }}" enctype="multipart/form-data">
         @csrf
 
         {{-- Titel --}}
-        <div class="mb-4">
+        <div class="mb-6">
             <label for="title" class="block text-sm font-medium text-gray-700">Titel</label>
             <input id="title" name="title" type="text"
                    class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
-                   value="{{ old('title') }}" required>
+                   value="{{ old('title') }}" placeholder="z. B. Vorstandssitzung" required>
             @error('title')
                 <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
             @enderror
         </div>
 
         {{-- Typ --}}
-        <div class="mb-4">
+        <div class="mb-6">
             <label for="type" class="block text-sm font-medium text-gray-700">Protokolltyp</label>
             <select id="type" name="type"
                     class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
@@ -45,42 +46,42 @@
             @enderror
         </div>
 
-        {{-- Ort --}}
-        <div class="mb-4">
-            <label for="location" class="block text-sm font-medium text-gray-700">Ort</label>
-            <input id="location" name="location" type="text"
-                   class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
-                   value="{{ old('location') }}" placeholder="z. B. Vereinsheim Gilde Eck">
-            @error('location')
-                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
-            @enderror
+        {{-- Ort und Zeitraum --}}
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div>
+                <label for="location" class="block text-sm font-medium text-gray-700">Ort</label>
+                <input id="location" name="location" type="text"
+                       class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
+                       value="{{ old('location') }}" placeholder="z. B. Vereinsheim">
+                @error('location')
+                    <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+            
+            <div>
+                <label for="start_time" class="block text-sm font-medium text-gray-700">Beginn</label>
+                <input id="start_time" name="start_time" type="time"
+                       class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
+                       value="{{ old('start_time') }}">
+                @error('start_time')
+                    <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="end_time" class="block text-sm font-medium text-gray-700">Ende</label>
+                <input id="end_time" name="end_time" type="time"
+                       class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
+                       value="{{ old('end_time') }}">
+                @error('end_time')
+                    <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
-        {{-- Beginn --}}
-        <div class="mb-4">
-            <label for="start_time" class="block text-sm font-medium text-gray-700">Beginn</label>
-            <input id="start_time" name="start_time" type="time"
-                   class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
-                   value="{{ old('start_time') }}">
-            @error('start_time')
-                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        {{-- Ende --}}
-        <div class="mb-4">
-            <label for="end_time" class="block text-sm font-medium text-gray-700">Ende</label>
-            <input id="end_time" name="end_time" type="time"
-                   class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
-                   value="{{ old('end_time') }}">
-            @error('end_time')
-                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
-            @enderror
-        </div>
-
-        {{-- Teilnehmer (Checkbox-Grid) --}}
+        {{-- Teilnehmer --}}
         <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Teilnehmer</label>
+            <label class="block text-sm font-medium text-gray-700">Teilnehmer</label>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 @foreach ($members as $member)
                     <label class="flex items-center space-x-2">
@@ -96,11 +97,48 @@
             @enderror
         </div>
 
-        {{-- Inhalt mit Trix --}}
+        {{-- Beschlüsse --}}
         <div class="mb-6">
-            <label for="content" class="block text-sm font-medium text-gray-700">Inhalt</label>
+            <label for="resolutions" class="block text-sm font-medium text-gray-700">Beschlüsse / Ergebnisse</label>
+            <textarea id="resolutions" name="resolutions"
+                      class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
+                      rows="4">{{ old('resolutions') }}</textarea>
+            @error('resolutions')
+                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- Nächstes Treffen --}}
+        <div class="mb-6">
+            <label for="next_meeting" class="block text-sm font-medium text-gray-700">Details zum nächsten Treffen</label>
+            <textarea id="next_meeting" name="next_meeting"
+                      class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring focus:ring-blue-200"
+                      rows="3">{{ old('next_meeting') }}</textarea>
+            @error('next_meeting')
+                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- NEU: Anhänge --}}
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700">Anhänge</label>
+            <input type="file" name="attachments[]" multiple
+                   class="mt-1 block w-full border rounded p-2 bg-white">
+
+            <p class="text-xs text-gray-500 mt-1">
+                Erlaubt: PDF, Bilder, Word, Excel (max. 10MB pro Datei)
+            </p>
+
+            @error('attachments')
+                <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
+            @enderror
+        </div>
+
+        {{-- Inhalt --}}
+        <div class="mb-6">
+            <label for="content" class="block text-sm font-medium text-gray-700">Protokoll</label>
             <input id="content" type="hidden" name="content" value="{{ old('content') }}">
-            <trix-editor input="content" class="bg-white border rounded shadow-sm min-h-[300px] w-full p-2"></trix-editor>
+            <trix-editor input="content" class="bg-white border rounded shadow-sm min-h-[300px]"></trix-editor>
             @error('content')
                 <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
             @enderror
@@ -109,7 +147,7 @@
         {{-- Speichern --}}
         <div class="flex justify-end">
             <button type="submit"
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    class="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700">
                 Speichern
             </button>
         </div>

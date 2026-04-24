@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Account;
+use App\Models\Tenant;
 use App\Scopes\CurrentTenantScope;
 
 class Transaction extends Model
@@ -16,6 +17,17 @@ class Transaction extends Model
         'amount',
         'account_from_id',
         'account_to_id',
+        'tax_area',
+        'receipt_number',
+        'receipt_file',
+    ];
+
+    /**
+     * 🔥 WICHTIG: Typumwandlungen
+     */
+    protected $casts = [
+        'date' => 'date',
+        'amount' => 'decimal:2',
     ];
 
     protected static function booted(): void
@@ -29,11 +41,17 @@ class Transaction extends Model
         });
     }
 
+    /**
+     * Beziehung: Konto (von)
+     */
     public function account_from()
     {
         return $this->belongsTo(Account::class, 'account_from_id');
     }
 
+    /**
+     * Beziehung: Konto (nach)
+     */
     public function account_to()
     {
         return $this->belongsTo(Account::class, 'account_to_id');
@@ -56,7 +74,7 @@ class Transaction extends Model
     }
 
     /**
-     * Prüft, ob es sich um eine Einnahme handelt.
+     * Prüft, ob es sich um eine Einnahme handelt
      */
     public function isIncome(): bool
     {
@@ -64,7 +82,7 @@ class Transaction extends Model
     }
 
     /**
-     * Prüft, ob es sich um eine Ausgabe handelt.
+     * Prüft, ob es sich um eine Ausgabe handelt
      */
     public function isExpense(): bool
     {

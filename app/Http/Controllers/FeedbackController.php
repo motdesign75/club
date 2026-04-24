@@ -27,7 +27,7 @@ class FeedbackController extends Controller
         ]);
 
         // Mail versenden
-        Mail::to('kontakt@clubano.de')->send(
+        Mail::to('system@clubano.de')->send(
             new FeedbackSubmitted($feedback)
         );
 

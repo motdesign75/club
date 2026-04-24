@@ -45,7 +45,7 @@
                 ['label' => 'Geburtstag', 'value' => $member->birthday ? \Carbon\Carbon::parse($member->birthday)->format('d.m.Y') : '–'],
             ],
             '📝 Mitgliedschaft' => [
-                ['label' => 'Mitgliedschaft', 'value' => $member->membership ? $member->membership->name . ' – ' . number_format($member->membership->fee, 2, ',', '.') . ' € / ' . $member->membership->billing_cycle : '–'],
+                ['label' => 'Mitgliedschaft', 'value' => $member->membership ? $member->membership->name . ' – ' . number_format($member->membership->amount, 2, ',', '.') . ' € / ' . $member->membership->interval : '–'],
                 ['label' => 'Mitgliedsnummer', 'value' => $member->member_id],
                 ['label' => 'Eintritt', 'value' => $member->entry_date ? \Carbon\Carbon::parse($member->entry_date)->format('d.m.Y') : '–'],
                 ['label' => 'Austritt', 'value' => $member->exit_date ? \Carbon\Carbon::parse($member->exit_date)->format('d.m.Y') : '–'],

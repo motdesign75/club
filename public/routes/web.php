@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\TenantController;
@@ -12,6 +13,14 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CustomMemberFieldController;
 use App\Http\Controllers\ReceiptController;
+
+// ------------------------------------------------------------
+// Stripe Webhook (Cashier)
+// Wichtig: als "api" laufen lassen (kein CSRF -> kein 419)
+// ------------------------------------------------------------
+Route::post('/stripe/webhook', [\Laravel\Cashier\Http\Controllers\WebhookController::class, 'handleWebhook'])
+    ->middleware([\Laravel\Cashier\Http\Middleware\VerifyWebhookSignature::class, 'api'])
+    ->name('stripe.webhook');
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
@@ -86,4 +95,4 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
